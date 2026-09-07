@@ -109,12 +109,9 @@
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btnrow{display:flex;gap:10px;flex-wrap:wrap}
 
-  /* sketches */
-  .skrow{margin-bottom:8px}
-  .sknm{font-size:12px;font-weight:700;margin-bottom:3px}
-  .sktrio{display:flex;gap:6px;flex-wrap:wrap}
-  svg.sk{width:88px;height:56px;flex:0 0 auto}
-  .skhint{font-size:11px;color:var(--muted);margin-top:2px}
+  /* motion graphs (drawn on the animation panel) */
+  canvas#graphs{display:block;width:100%;height:156px}
+  @media (max-width:520px){ canvas#graphs{height:134px} }
 
   table.log{width:100%;border-collapse:collapse;font-size:13px}
   table.log th,table.log td{text-align:right;padding:4px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
@@ -148,6 +145,10 @@
       <div class="stagewrap">
         <canvas id="stage"></canvas>
         <div class="results" id="results"></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <h2>Motion graphs — traced as the rockets fly</h2>
+        <canvas id="graphs"></canvas>
       </div>
     </div>
 
@@ -183,11 +184,6 @@
           <button class="btn secondary" id="testBtn">🧪 Test flight</button>
           <button class="btn" id="raceBtn" style="flex:1">🚀 Race the bots!</button>
         </div>
-      </div>
-
-      <div class="card">
-        <h2>Motion sketches — shapes only</h2>
-        <div id="sketches"></div>
       </div>
 
       <div class="card">
@@ -345,7 +341,7 @@ function renderMatchBar(){ const s=cur(); const round=Math.min(3,s.mw+s.ml+1);
 }
 
 /* ---------- mission + controls + log ---------- */
-function syncAll(){ renderTabs(); renderMission(); renderControls(); renderMatchBar(); renderStudentSketch(); renderLog(); hideResults(); drawStatic(); }
+function syncAll(){ renderTabs(); renderMission(); renderControls(); renderMatchBar(); renderLog(); hideResults(); drawStatic(); }
 function renderMission(){
   const c=cfg(), g=cur().g;
   $('#missionTitle').textContent='Mission — '+c.name;
@@ -365,7 +361,7 @@ function step(which,dir){
   const s=cur();
   if(which==='vi'){ s.vi=clamp(r1(s.vi+dir*VI_STEP),VI_MIN,VI_MAX); }
   else { let a=r1(s.a+dir*A_STEP); if(a>-A_MAG && a<A_MAG) a=dir>0?A_MAG:-A_MAG; s.a=clamp(a,-A_MAX,A_MAX); }
-  renderControls(); renderStudentSketch();
+  renderControls(); if(!busy) drawIdleGraphs();
 }
 $('#viDown').onclick=()=>step('vi',-1); $('#viUp').onclick=()=>step('vi',1);
 $('#aDown').onclick=()=>step('a',-1);  $('#aUp').onclick=()=>step('a',1);
@@ -377,42 +373,46 @@ function renderLog(){
     tb.appendChild(tr); });
 }
 
-/* ---------- sketches (schematic x-t, v-t, a-t) ---------- */
-function miniSketch(kind,vi,a,dur,color,target){
-  const W=88,H=56,pad=9; dur=Math.max(dur,0.2);
-  const N=24, xs=[], ys=[];
-  for(let i=0;i<=N;i++){ const tau=dur*i/N; xs.push(tau);
-    ys.push(kind==='x'?posAt(vi,a,tau):kind==='v'?velAt(vi,a,tau):a); }
-  let ymin=Math.min(0,...ys), ymax=Math.max(0,...ys);
-  if(target!=null){ ymin=Math.min(ymin,target); ymax=Math.max(ymax,target); }
-  if(ymax-ymin<1e-6){ ymax=ymin+1; }
-  const mx=t=>pad+(t/dur)*(W-2*pad), my=y=>H-pad-((y-ymin)/(ymax-ymin))*(H-2*pad);
-  const path=xs.map((t,i)=>`${i?'L':'M'}${mx(t).toFixed(1)},${my(ys[i]).toFixed(1)}`).join(' ');
-  const zy=my(0);
-  const tline = target==null?'' : `<line x1="${pad}" y1="${my(target).toFixed(1)}" x2="${W-pad}" y2="${my(target).toFixed(1)}" stroke="#ffd166" stroke-dasharray="2 2" stroke-width="1" opacity=".75"/>`;
-  return `<svg viewBox="0 0 ${W} ${H}" class="sk" aria-hidden="true">
-    <rect x=".5" y=".5" width="${W-1}" height="${H-1}" rx="6" fill="#0c1428" stroke="#2c3d6b"/>
-    <line x1="${pad}" y1="${zy.toFixed(1)}" x2="${W-pad}" y2="${zy.toFixed(1)}" stroke="#3a4d7d"/>
-    <line x1="${pad}" y1="${pad-3}" x2="${pad}" y2="${H-pad+3}" stroke="#3a4d7d"/>
-    ${tline}
-    <path d="${path}" fill="none" stroke="${color}" stroke-width="2"/>
-    <circle cx="${mx(0).toFixed(1)}" cy="${my(ys[0]).toFixed(1)}" r="2.4" fill="#0c1428" stroke="${color}" stroke-width="1.6"/>
-    <circle cx="${mx(dur).toFixed(1)}" cy="${my(ys[N]).toFixed(1)}" r="2.7" fill="${color}"/>
-    <text x="${pad+2}" y="11" fill="#8296c8" font-size="8">${kind}</text>
-    <text x="${W-pad}" y="${H-3}" fill="#8296c8" font-size="8" text-anchor="end">t</text>
-  </svg>`;
+/* ---------- motion graphs on the animation panel (traced live with the rockets) ---------- */
+const gcv=$('#graphs'), ggx=gcv.getContext('2d');
+function fitGraphs(){ const dpr=window.devicePixelRatio||1,w=gcv.clientWidth,h=gcv.clientHeight;
+  const bw=Math.round(w*dpr),bh=Math.round(h*dpr); if(gcv.width!==bw||gcv.height!==bh){gcv.width=bw;gcv.height=bh;}
+  ggx.setTransform(dpr,0,0,dpr,0,0); return {w,h}; }
+function gRR(x,y,w,h,r){ ggx.beginPath(); ggx.moveTo(x+r,y); ggx.arcTo(x+w,y,x+w,y+h,r); ggx.arcTo(x+w,y+h,x,y+h,r); ggx.arcTo(x,y+h,x,y,r); ggx.arcTo(x,y,x+w,y,r); ggx.closePath(); }
+function gval(kind,k,t,c,g){ if(kind==='a')return k.a; if(kind==='v')return velAt(k.vi,k.a,t);
+  let p=posAt(k.vi,k.a,t); if(c.anim==='gate')p=Math.min(p,g.d); return p; }
+function gtgt(kind,c,g){ if(kind==='v'&&(c.key==='burn'||c.key==='gate'))return g.target;
+  if(kind==='x'){ if(c.key==='land')return g.target; if(c.anim==='gate')return g.d; } return null; }
+function drawGraphs(comps,tau){
+  const {w,h}=fitGraphs(); ggx.clearRect(0,0,w,h);
+  const c=cfg(), g=cur().g, kinds=['x','v','a'], titles={x:'position · t',v:'velocity · t',a:'accel · t'};
+  const gap=9, cw=(w-gap*4)/3, top=18, bot=h-14, ph=bot-top;
+  comps.forEach(k=>{ if(!k._me) k._me=motionEnd(k,c,g); });
+  let tmax=0.3; comps.forEach(k=>tmax=Math.max(tmax,k._me.tEnd));
+  kinds.forEach((kind,ci)=>{
+    const x0=gap+ci*(cw+gap), plotL=x0+7, plotR=x0+cw-7;
+    let ymin=0,ymax=0;
+    comps.forEach(k=>{ for(let i=0;i<=24;i++){ const y=gval(kind,k,k._me.tEnd*i/24,c,g); if(y<ymin)ymin=y; if(y>ymax)ymax=y; } });
+    const tgt=gtgt(kind,c,g); if(tgt!=null){ if(tgt<ymin)ymin=tgt; if(tgt>ymax)ymax=tgt; }
+    if(ymax-ymin<1e-6) ymax=ymin+1;
+    const yp=(ymax-ymin)*0.14; ymin-=yp; ymax+=yp;
+    const PX=t=>plotL+(t/tmax)*(plotR-plotL), PY=y=>bot-((y-ymin)/(ymax-ymin))*ph;
+    ggx.fillStyle='#0c1428'; gRR(x0,top-2,cw,ph+6,7); ggx.fill(); ggx.strokeStyle='#2c3d6b'; ggx.lineWidth=1; ggx.stroke();
+    ggx.strokeStyle='#33456f'; ggx.beginPath(); ggx.moveTo(plotL,PY(0)); ggx.lineTo(plotR,PY(0)); ggx.stroke();
+    ggx.beginPath(); ggx.moveTo(plotL,top); ggx.lineTo(plotL,bot); ggx.stroke();
+    if(tgt!=null){ ggx.strokeStyle='#8ff0b6'; ggx.setLineDash([3,3]); ggx.beginPath(); ggx.moveTo(plotL,PY(tgt)); ggx.lineTo(plotR,PY(tgt)); ggx.stroke(); ggx.setLineDash([]); }
+    ggx.fillStyle='#8296c8'; ggx.font='10px -apple-system,sans-serif'; ggx.textAlign='left'; ggx.fillText(titles[kind],x0+3,top-5);
+    ggx.textAlign='right'; ggx.fillText('t',plotR,bot+11);
+    comps.forEach(k=>{ const tend=Math.min(tau,k._me.tEnd);
+      ggx.strokeStyle=k.color; ggx.lineWidth=2; ggx.beginPath();
+      const N=28; for(let i=0;i<=N;i++){ const t=tend*i/N, X=PX(t), Y=PY(gval(kind,k,t,c,g)); i?ggx.lineTo(X,Y):ggx.moveTo(X,Y); }
+      ggx.stroke();
+      ggx.beginPath(); ggx.arc(PX(0),PY(gval(kind,k,0,c,g)),2.6,0,7); ggx.fillStyle='#0c1428'; ggx.fill(); ggx.strokeStyle=k.color; ggx.lineWidth=1.6; ggx.stroke();
+      ggx.beginPath(); ggx.arc(PX(tend),PY(gval(kind,k,tend,c,g)),2.9,0,7); ggx.fillStyle=k.color; ggx.fill();
+    });
+  });
 }
-function renderSketches(comps){
-  const c=cfg(), g=cur().g;
-  $('#sketches').innerHTML = comps.map(k=>{
-    const dur = c.anim==='gate' ? motionEnd(k,c,g).tEnd : g.t;
-    const tX = c.key==='land'?g.target : (c.anim==='gate'?g.d:null);
-    const tV = (c.key==='burn'||c.key==='gate')?g.target:null;
-    return `<div class="skrow"><div class="sknm" style="color:${k.color}">${k.name||'You'}</div>
-      <div class="sktrio">${miniSketch('x',k.vi,k.a,dur,k.color,tX)}${miniSketch('v',k.vi,k.a,dur,k.color,tV)}${miniSketch('a',k.vi,k.a,dur,k.color,null)}</div></div>`;
-  }).join('') + `<div class="skhint">x·t &nbsp; v·t &nbsp; a·t — start (ring) → end (dot); dashed line = target</div>`;
-}
-function renderStudentSketch(){ renderSketches([{name:'You',color:'#ffd166',vi:cur().vi,a:cur().a}]); }
+function drawIdleGraphs(){ const s=cur(); drawGraphs([{name:'You',color:'#ffd166',vi:s.vi,a:s.a}], Infinity); }
 
 /* ---------- canvas stage ---------- */
 const stage=$('#stage'), sx=stage.getContext('2d');
@@ -479,13 +479,13 @@ function animate(comps,c,g,onEnd){
   busy=true; setButtons(true); comps.forEach(k=>k._me=motionEnd(k,c,g));
   raceCtx={comps,cfg:c,g,...computeLayout(comps,c,g)};
   const REAL=Math.min(3.4,Math.max(2.2,raceCtx.dur*0.7))*1000, t0=performance.now();
-  (function frame(now){ const kf=Math.min(1,(now-t0)/REAL); drawScene(kf*raceCtx.dur);
+  (function frame(now){ const kf=Math.min(1,(now-t0)/REAL), tau=kf*raceCtx.dur; drawScene(tau); drawGraphs(comps,tau);
     if(kf<1) raf=requestAnimationFrame(frame);
-    else { drawScene(raceCtx.dur); busy=false; setButtons(false); onEnd&&onEnd(); } })(performance.now());
+    else { drawScene(raceCtx.dur); drawGraphs(comps,raceCtx.dur); busy=false; setButtons(false); onEnd&&onEnd(); } })(performance.now());
 }
 function setButtons(on){ $('#testBtn').disabled=on; $('#raceBtn').disabled=on;
   document.querySelectorAll('.stepbtn,.tab').forEach(b=>b.style.pointerEvents=on?'none':''); }
-function drawStatic(){ raceCtx=null; if(raf) cancelAnimationFrame(raf); drawScene(0); }
+function drawStatic(){ raceCtx=null; if(raf) cancelAnimationFrame(raf); drawScene(0); drawIdleGraphs(); }
 
 /* ---------- test flight ---------- */
 $('#testBtn').onclick=()=>{
@@ -493,7 +493,7 @@ $('#testBtn').onclick=()=>{
   const you={name:'You',color:'#ffd166',vi:s.vi,a:s.a};
   animate([you],c,g,()=>{
     const res=c.result(s.vi,s.a,g), err=isFinite(res)?Math.abs(res-c.target(g)):Infinity;
-    s.log.push({vi:s.vi,a:s.a,res,err}); renderLog(); renderStudentSketch();
+    s.log.push({vi:s.vi,a:s.a,res,err}); renderLog();
     const box=$('#results');
     box.innerHTML=`<div class="banner">🧪 Test flight</div>
       <div class="rank"><span class="sw" style="background:#ffd166"></span><span class="who">You</span>
@@ -520,7 +520,7 @@ $('#raceBtn').onclick=()=>{
     const roundWon = you.err<=bots[0].err+1e-9 && you.err<=bots[1].err+1e-9;
     if(roundWon) s.mw++; else s.ml++;
     if(s.mw>=2) s.won=true;
-    renderTabs(); renderMatchBar(); renderSketches(comps);
+    renderTabs(); renderMatchBar();
     showRace(comps,c,g,roundWon);
   });
 };
