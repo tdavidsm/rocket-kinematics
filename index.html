@@ -23,8 +23,6 @@
   .helpbtn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;
     padding:7px 12px;font-size:13px;cursor:pointer}
   .helpbtn:hover{border-color:var(--accent)}
-
-  /* scoreboard medals in header */
   .medals{display:flex;gap:6px}
   .medal{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
     font-size:13px;border:2px solid var(--line);background:var(--panel2);color:var(--muted)}
@@ -32,12 +30,13 @@
 
   .wrap{max-width:1500px;margin:0 auto;padding:14px 16px 30px}
 
-  /* challenge tabs */
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .tab{flex:1 1 220px;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:12px;
     padding:10px 12px;cursor:pointer;transition:.12s}
   .tab:hover{border-color:#3a4d7d}
   .tab.sel{border-color:var(--accent);background:#20315c}
+  .tab.locked{opacity:.5;cursor:not-allowed}
+  .tab.locked:hover{border-color:var(--line)}
   .tab .n{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
   .tab .nm{font-weight:700;font-size:15px;margin-top:2px}
   .tab .eq{font-size:12px;color:var(--muted);margin-top:2px;font-style:italic}
@@ -55,23 +54,23 @@
   canvas#stage{display:block;width:100%;height:340px}
   @media (max-width:520px){ canvas#stage{height:260px} }
 
-  /* results overlay */
-  .results{position:absolute;inset:0;background:rgba(8,14,32,.86);display:none;flex-direction:column;
+  .results{position:absolute;inset:0;background:rgba(8,14,32,.9);display:none;flex-direction:column;
     padding:14px 16px;overflow:auto}
   .results.show{display:flex}
-  .banner{font-size:20px;font-weight:800;margin:2px 0 10px}
+  .banner{font-size:20px;font-weight:800;margin:2px 0 4px}
+  .matchscore{font-size:13px;color:var(--muted);margin:0 0 8px}
+  .matchscore b{color:var(--ink)}
   .rank{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;background:var(--panel2);
     margin-bottom:6px;border:1px solid var(--line)}
   .rank .sw{width:14px;height:14px;border-radius:50%}
   .rank .who{font-weight:700;min-width:74px}
-  .rank .res{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)}
+  .rank .res{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);text-align:right}
   .rank.win{border-color:var(--accent)}
   .worked{margin-top:8px;font-size:13px;color:var(--muted);background:#0c1428;border:1px solid var(--line);
     border-radius:10px;padding:9px 11px;line-height:1.5}
   .worked b{color:var(--ink)}
   .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
 
-  /* mission */
   .mission .goal{font-size:15px;line-height:1.5}
   .mission .goal b{color:var(--accent)}
   .givens{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
@@ -83,7 +82,12 @@
   .eqcard .sub{font-size:13px;color:var(--muted);margin-top:4px}
   .hintline{font-size:12px;color:var(--muted);margin-top:8px}
 
-  /* controls */
+  .matchbar{display:flex;align-items:center;gap:6px;margin:0 0 10px}
+  .pip{width:13px;height:13px;border-radius:50%;background:var(--panel2);border:1px solid var(--line)}
+  .pip.w{background:var(--good);border-color:var(--good)}
+  .pip.l{background:var(--bot2);border-color:var(--bot2)}
+  .matchbar .mtxt{font-size:12px;color:var(--muted);margin-left:4px}
+
   .ctrl{display:flex;align-items:center;gap:10px;margin:10px 0}
   .ctrl .lab{flex:1;min-width:0}
   .ctrl .lab .t{font-weight:700}
@@ -93,7 +97,7 @@
     color:var(--ink);font-size:24px;font-weight:700;cursor:pointer;line-height:1;touch-action:manipulation}
   .stepbtn:active{background:#28407a}
   .stepbtn:disabled{opacity:.35;cursor:not-allowed}
-  .val{min-width:96px;text-align:center;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;
+  .val{min-width:104px;text-align:center;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;
     background:#0c1428;border:1px solid var(--line);border-radius:10px;padding:8px 4px}
   .val small{font-size:12px;color:var(--muted);font-weight:600}
 
@@ -105,6 +109,13 @@
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btnrow{display:flex;gap:10px;flex-wrap:wrap}
 
+  /* sketches */
+  .skrow{margin-bottom:8px}
+  .sknm{font-size:12px;font-weight:700;margin-bottom:3px}
+  .sktrio{display:flex;gap:6px;flex-wrap:wrap}
+  svg.sk{width:88px;height:56px;flex:0 0 auto}
+  .skhint{font-size:11px;color:var(--muted);margin-top:2px}
+
   table.log{width:100%;border-collapse:collapse;font-size:13px}
   table.log th,table.log td{text-align:right;padding:4px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
   table.log th{color:var(--muted);font-weight:600}
@@ -113,7 +124,7 @@
 
   .modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;z-index:30;padding:18px}
   .modal.show{display:flex}
-  .modalbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:600px;
+  .modalbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:620px;
     padding:22px 24px;line-height:1.55;max-height:86vh;overflow:auto}
   .modalbox h2{margin-top:0}
   .modalbox li{margin:6px 0}
@@ -123,7 +134,7 @@
 <body>
 <header>
   <h1>🚀 Rocket Kinematics</h1>
-  <span class="tag">Do the physics · beat the bots</span>
+  <span class="tag">Do the physics · win the match</span>
   <span class="spacer"></span>
   <div class="medals" id="medals"></div>
   <button class="helpbtn" id="helpBtn">?&nbsp;How&nbsp;to</button>
@@ -146,11 +157,12 @@
         <div class="goal" id="goal"></div>
         <div class="givens" id="givens"></div>
         <div class="eqcard" id="eqcard"></div>
-        <div class="hintline">Two unknowns, one equation — so pick any <b>vᵢ</b>, then compute the <b>a</b> that hits the target (or the other way round). Then race!</div>
+        <div class="hintline">Two unknowns, one equation — pick any <b>vᵢ</b> and compute the <b>a</b> that hits the target (or the other way round). Then race.</div>
       </div>
 
       <div class="card">
         <h2>Your rocket</h2>
+        <div class="matchbar" id="matchBar"></div>
         <div class="ctrl">
           <div class="lab"><div class="t">Initial velocity, vᵢ</div><div class="u">steps of 0.5 m/s</div></div>
           <div class="stepper">
@@ -160,10 +172,10 @@
           </div>
         </div>
         <div class="ctrl">
-          <div class="lab"><div class="t">Acceleration, a</div><div class="u">steps of 0.1 m/s² · min 0.5</div></div>
+          <div class="lab"><div class="t">Acceleration, a</div><div class="u">steps of 0.1 · |a| ≥ 0.5 · + forward / − reverse</div></div>
           <div class="stepper">
             <button class="stepbtn" id="aDown">−</button>
-            <div class="val"><span id="aVal">3.0</span><br><small>m/s²</small></div>
+            <div class="val"><span id="aVal">+3.0</span><br><small>m/s²</small></div>
             <button class="stepbtn" id="aUp">+</button>
           </div>
         </div>
@@ -171,6 +183,11 @@
           <button class="btn secondary" id="testBtn">🧪 Test flight</button>
           <button class="btn" id="raceBtn" style="flex:1">🚀 Race the bots!</button>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>Motion sketches — shapes only</h2>
+        <div id="sketches"></div>
       </div>
 
       <div class="card">
@@ -185,14 +202,18 @@
 
 <div class="modal" id="helpModal"><div class="modalbox">
   <h2>How to play</h2>
-  <p>Three challenges, one for each kinematics equation with acceleration. In every one you set your rocket's <b>initial velocity vᵢ</b> and <b>acceleration a</b>, then launch.</p>
+  <p>Three challenges, one per kinematics equation with acceleration. In each, set your rocket's <b>initial velocity vᵢ</b> and <b>acceleration a</b>, then launch.</p>
   <ol>
-    <li><b>Timed Burn</b> — <code>v_f = v_i + a·t</code>. You're given the burn <b>time</b> and a <b>target final speed</b>.</li>
-    <li><b>Speed Gate</b> — <code>v_f² = v_i² + 2·a·d</code>. You're given a <b>distance</b> and the <b>target speed</b> to be going when you reach it.</li>
-    <li><b>Target Landing</b> — <code>d = v_i·t + ½·a·t²</code>. You're given a <b>time</b> and a <b>target distance</b> to land on.</li>
+    <li><b>Timed Burn</b> — <code>v_f = v_i + a·t</code>. Given the burn <b>time</b> and a <b>target final speed</b>.</li>
+    <li><b>Speed Gate</b> — <code>v_f² = v_i² + 2·a·d</code>. Given a <b>distance</b> and the <b>target speed</b> to be going at it. (Decelerate too hard and you'll stall before the gate!)</li>
+    <li><b>Target Landing</b> — <code>d = v_i·t + ½·a·t²</code>. Given a <b>time</b> and a <b>target distance</b> to land on.</li>
   </ol>
-  <p>Because there are two unknowns and one equation, you get to <b>choose</b> one value and <b>calculate</b> the other. <b>🧪 Test flight</b> flies your rocket alone so you can gather data; <b>🚀 Race the bots</b> runs you against two computer rockets. Get <b>closer to the target than both bots</b> to clear the challenge and earn the medal. The bots are good (75–90% of perfect) but beatable — if your math is sharp.</p>
-  <p style="color:var(--muted)">Rules: acceleration is always forward and at least 0.5 m/s² (steps of 0.1); initial velocity moves in steps of 0.5 m/s.</p>
+  <ul>
+    <li><b>Best of 3:</b> every challenge is a match. Each round has <b>fresh numbers</b>; beat <b>both bots</b> to win the round, and win <b>2 rounds</b> to clear the challenge and earn its ★.</li>
+    <li><b>Unlock order:</b> clear a challenge to unlock the next.</li>
+    <li>Bots play at a random <b>75–90% of optimal</b> — good, but beatable with sharp math.</li>
+  </ul>
+  <p style="color:var(--muted)">Rules: acceleration can be <b>forward (+) or reverse (−)</b> but its size is at least 0.5 m/s² (steps of 0.1); initial velocity moves in steps of 0.5 m/s. The little sketches show the <b>shape</b> of your x-t, v-t and a-t graphs — start/end and curve, not exact readings.</p>
   <button class="btn" id="closeHelp">Let's go</button>
 </div></div>
 
@@ -205,19 +226,33 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 function gridRand(lo,hi,step){ const n=Math.round((hi-lo)/step); return r2(lo+step*Math.floor(Math.random()*(n+1))); }
 function shade(hex,amt){ const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
   r=clamp(r,0,255);g=clamp(g,0,255);b=clamp(b,0,255); return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
+const aFmt=a=>(a>=0?'+':'')+a.toFixed(1);
+const aParen=a=>a<0?`(${a.toFixed(1)})`:a.toFixed(1);
+const fmt=v=>isFinite(v)?v.toFixed(2):'—';
 
 /* ---------- limits ---------- */
 const VI_MIN=0, VI_MAX=25, VI_STEP=0.5;
-const A_MIN=0.5, A_MAX=12, A_STEP=0.1;
+const A_MAG=0.5, A_MAX=12, A_STEP=0.1;   // |a| between 0.5 and 12
 
 /* ---------- physics ---------- */
 const posAt=(vi,a,t)=>vi*t+0.5*a*t*t;
 const velAt=(vi,a,t)=>vi+a*t;
-const timeToDist=(vi,a,d)=> a<=0 ? (d/Math.max(vi,1e-6)) : (-vi+Math.sqrt(Math.max(0,vi*vi+2*a*d)))/a;
+const timeToDist=(vi,a,d)=>{ if(Math.abs(a)<1e-9) return d/Math.max(vi,1e-6);
+  return (-vi+Math.sqrt(Math.max(0,vi*vi+2*a*d)))/a; };
+// where the run ends for a rocket (handles decel/stall before a gate)
+function motionEnd(k,c,g){
+  if(c.anim==='gate'){
+    if(k.a>=0) return {tEnd:timeToDist(k.vi,k.a,g.d), reached:true};
+    const stopD = k.vi*k.vi/(-2*k.a);
+    if(stopD>=g.d-1e-9) return {tEnd:timeToDist(k.vi,k.a,g.d), reached:true};
+    return {tEnd: k.vi>0? -k.vi/k.a : 0.4, reached:false};   // stalls short of the gate
+  }
+  return {tEnd:g.t, reached:true};
+}
 
 /* ---------- challenges ---------- */
 const CHALLENGES=[
- { key:'burn', name:'Timed Burn', eq:'v<sub>f</sub> = v<sub>i</sub> + a·t', resName:'final speed', resUnit:'m/s',
+ { key:'burn', anim:'time', name:'Timed Burn', eq:'v<sub>f</sub> = v<sub>i</sub> + a·t', resName:'final speed', resUnit:'m/s',
    gen(){ const t=pick([3.0,3.5,4.0,4.5,5.0]); const vi0=gridRand(1,9,0.5), a0=gridRand(1.0,6.0,0.1);
      return {t, target:r1(vi0+a0*t)}; },
    result:(vi,a,g)=>velAt(vi,a,g.t),
@@ -225,17 +260,19 @@ const CHALLENGES=[
    givens:g=>[['Burn time t', g.t.toFixed(1)+' s'],['Target v_f', g.target.toFixed(1)+' m/s']],
    goal:g=>`Burn for <b>${g.t.toFixed(1)} s</b> and finish moving at exactly <b>${g.target.toFixed(1)} m/s</b>.`,
    eqfill:g=>`v<sub>f</sub> = v<sub>i</sub> + a × ${g.t.toFixed(1)}`,
-   anim:'time' },
- { key:'gate', name:'Speed Gate', eq:'v<sub>f</sub>² = v<sub>i</sub>² + 2·a·d', resName:'speed at the gate', resUnit:'m/s',
+   worked:(g,vi,a)=>`v<sub>f</sub> = ${vi.toFixed(1)} + ${aParen(a)}×${g.t.toFixed(1)} = <b>${velAt(vi,a,g.t).toFixed(2)} m/s</b>.` },
+ { key:'gate', anim:'gate', name:'Speed Gate', eq:'v<sub>f</sub>² = v<sub>i</sub>² + 2·a·d', resName:'speed at the gate', resUnit:'m/s',
    gen(){ const d=pick([40,50,60,70,80]); const vi0=gridRand(2,10,0.5), a0=gridRand(1.0,6.0,0.1);
      return {d, target:r1(Math.sqrt(vi0*vi0+2*a0*d))}; },
-   result:(vi,a,g)=>Math.sqrt(vi*vi+2*a*g.d),
+   result:(vi,a,g)=>{ const disc=vi*vi+2*a*g.d; return disc<0?NaN:Math.sqrt(disc); },
    target:g=>g.target, emax:g=>Math.max(1.5,0.4*g.target),
    givens:g=>[['Gate distance d', g.d+' m'],['Target v_f', g.target.toFixed(1)+' m/s']],
    goal:g=>`Reach the gate at <b>${g.d} m</b> while travelling <b>${g.target.toFixed(1)} m/s</b>.`,
    eqfill:g=>`v<sub>f</sub>² = v<sub>i</sub>² + 2 × a × ${g.d}`,
-   anim:'gate' },
- { key:'land', name:'Target Landing', eq:'d = v<sub>i</sub>·t + ½·a·t²', resName:'distance travelled', resUnit:'m',
+   worked:(g,vi,a)=>{ const disc=vi*vi+2*a*g.d; return disc<0
+     ? `v<sub>f</sub>² = ${vi.toFixed(1)}² + 2×${aParen(a)}×${g.d} = ${disc.toFixed(0)} &lt; 0 — <b>stalled before the gate.</b>`
+     : `v<sub>f</sub> = √(${vi.toFixed(1)}² + 2×${aParen(a)}×${g.d}) = <b>${Math.sqrt(disc).toFixed(2)} m/s</b>.`; } },
+ { key:'land', anim:'time', name:'Target Landing', eq:'d = v<sub>i</sub>·t + ½·a·t²', resName:'distance travelled', resUnit:'m',
    gen(){ const t=pick([3.0,3.5,4.0,4.5,5.0,5.5,6.0]); const vi0=gridRand(1,8,0.5), a0=gridRand(1.0,5.0,0.1);
      return {t, target:Math.round(posAt(vi0,a0,t))}; },
    result:(vi,a,g)=>posAt(vi,a,g.t),
@@ -243,90 +280,139 @@ const CHALLENGES=[
    givens:g=>[['Flight time t', g.t.toFixed(1)+' s'],['Target distance d', g.target+' m']],
    goal:g=>`Fly for <b>${g.t.toFixed(1)} s</b> and land exactly <b>${g.target} m</b> downrange.`,
    eqfill:g=>`d = v<sub>i</sub> × ${g.t.toFixed(1)} + ½ × a × ${g.t.toFixed(1)}²`,
-   anim:'time' }
+   worked:(g,vi,a)=>`d = ${vi.toFixed(1)}×${g.t.toFixed(1)} + ½×${aParen(a)}×${g.t.toFixed(1)}² = <b>${posAt(vi,a,g.t).toFixed(2)} m</b>.` }
 ];
 
-/* ---------- enumerate valid combos for a challenge instance ---------- */
+/* ---------- enumerate valid combos (incl. reverse thrust) ---------- */
 function enumerate(cfg,g){
   const out=[], tgt=cfg.target(g);
   for(let vi=VI_MIN; vi<=VI_MAX+1e-9; vi+=VI_STEP)
-    for(let a=A_MIN; a<=A_MAX+1e-9; a+=A_STEP){
-      const A=r1(a), res=cfg.result(vi,A,g);
+    for(let a=-A_MAX; a<=A_MAX+1e-9; a+=A_STEP){
+      const A=r1(a); if(Math.abs(A)<A_MAG-1e-9) continue;
+      const res=cfg.result(vi,A,g); if(!isFinite(res)) continue;
       out.push({vi:r1(vi), a:A, res, err:Math.abs(res-tgt)});
     }
   return out;
 }
-/* pick two bots at 75–90% optimal (error ≈ (1-p)*Emax) */
 function makeBots(cfg,g,combos){
-  const Emax=cfg.emax(g), names=[['Astro-9','var(--bot1)','#4a7dff'],['Nova-X','var(--bot2)','#e6294b']];
+  const Emax=cfg.emax(g), names=[['Astro-9','#4a7dff'],['Nova-X','#e6294b']];
   const used=new Set(), bots=[];
   for(let k=0;k<2;k++){
     const p=0.75+Math.random()*0.15, want=(1-p)*Emax;
     let best=null,bd=Infinity;
     for(const c of combos){ const key=c.vi+'|'+c.a; if(used.has(key)) continue;
-      const d=Math.abs(c.err-want)+0.03*c.a;   // tiny bias to calmer accelerations
+      const d=Math.abs(c.err-want)+0.03*Math.abs(c.a);
       if(d<bd){bd=d;best=c;} }
     if(!best) best=combos[0];
     used.add(best.vi+'|'+best.a);
-    bots.push({name:names[k][0], colorVar:names[k][1], color:names[k][2], vi:best.vi, a:best.a,
-               res:best.res, err:best.err, opt:p, isBot:true});
+    bots.push({name:names[k][0], color:names[k][1], vi:best.vi, a:best.a, res:best.res, err:best.err, opt:p, isBot:true});
   }
   return bots;
 }
 
 /* ---------- state ---------- */
-const state={ ci:0, ch:CHALLENGES.map(cfg=>{ const g=cfg.gen(); return {g, vi:5.0, a:3.0, log:[], won:false, combos:enumerate(cfg,g)}; }) };
+const state={ ci:0, ch:CHALLENGES.map(cfg=>{ const g=cfg.gen();
+  return {g, vi:5.0, a:3.0, log:[], won:false, mw:0, ml:0, combos:enumerate(cfg,g)}; }) };
 function cur(){ return state.ch[state.ci]; }
 function cfg(){ return CHALLENGES[state.ci]; }
+function unlocked(i){ return i===0 || state.ch[i-1].won; }
+function matchOver(s){ return s.mw>=2 || s.ml>=2; }
 
-/* ---------- tabs + medals ---------- */
+/* ---------- header / tabs ---------- */
 function renderTabs(){
   $('#tabs').innerHTML='';
   CHALLENGES.forEach((c,i)=>{
-    const el=document.createElement('div'); el.className='tab'+(i===state.ci?' sel':'');
-    el.innerHTML=`<span class="badge">${state.ch[i].won?'✅':''}</span><div class="n">Challenge ${i+1}</div>
-      <div class="nm">${c.name}</div><div class="eq">${c.eq}</div>`;
-    el.onclick=()=>{ if(busy) return; state.ci=i; syncAll(); };
+    const lock=!unlocked(i);
+    const el=document.createElement('div'); el.className='tab'+(i===state.ci?' sel':'')+(lock?' locked':'');
+    el.innerHTML=`<span class="badge">${state.ch[i].won?'✅':(lock?'🔒':'')}</span>
+      <div class="n">Challenge ${i+1}</div><div class="nm">${c.name}</div><div class="eq">${c.eq}</div>`;
+    el.onclick=()=>{ if(busy||lock) return; setChallenge(i); };
     $('#tabs').appendChild(el);
   });
   const m=$('#medals'); m.innerHTML='';
   state.ch.forEach((c,i)=>{ const d=document.createElement('div'); d.className='medal'+(c.won?' won':'');
-    d.textContent=c.won?'★':(i+1); d.title='Challenge '+(i+1)+(c.won?' — cleared':''); m.appendChild(d); });
+    d.textContent=c.won?'★':(i+1); m.appendChild(d); });
+}
+function setChallenge(i){ if(!unlocked(i)) return; state.ci=i; if(matchOver(cur())) startMatch(); else syncAll(); }
+
+/* ---------- match flow ---------- */
+function startMatch(){ const s=cur(); s.mw=0; s.ml=0; newRound(); }
+function newRound(){ const c=cfg(), s=cur(); s.g=c.gen(); s.combos=enumerate(c,s.g); s.log=[]; s.vi=5.0; s.a=3.0; syncAll(); }
+function renderMatchBar(){ const s=cur(); const round=Math.min(3,s.mw+s.ml+1);
+  const pip=(cls)=>`<span class="pip ${cls}"></span>`;
+  let pips=''; pips+=pip(s.mw>=1?'w':''); pips+=pip(s.mw>=2?'w':'');
+  $('#matchBar').innerHTML=`${pips}<span class="mtxt">Best of 3 · Round ${round} — You ${s.mw} – ${s.ml} bots</span>`;
 }
 
-/* ---------- mission + controls ---------- */
-function syncAll(){ renderTabs(); renderMission(); renderControls(); renderLog(); hideResults(); drawStatic(); }
+/* ---------- mission + controls + log ---------- */
+function syncAll(){ renderTabs(); renderMission(); renderControls(); renderMatchBar(); renderStudentSketch(); renderLog(); hideResults(); drawStatic(); }
 function renderMission(){
   const c=cfg(), g=cur().g;
   $('#missionTitle').textContent='Mission — '+c.name;
   $('#goal').innerHTML=c.goal(g);
-  $('#givens').innerHTML=c.givens(g).map(([k,v])=>`<div class="given"><div class="k">${k.replace('v_f','v_f').replace('_f','<sub>f</sub>')}</div><div class="v">${v.replace('v_f','v_f')}</div></div>`).join('');
+  $('#givens').innerHTML=c.givens(g).map(([k,v])=>`<div class="given"><div class="k">${k.replace('v_f','v<sub>f</sub>')}</div><div class="v">${v}</div></div>`).join('');
   $('#eqcard').innerHTML=`${c.eq}<div class="sub">${c.eqfill(g)}</div>`;
   $('#logResHead').textContent=c.resName+' ('+c.resUnit+')';
 }
 function renderControls(){
   const s=cur();
   $('#viVal').textContent=s.vi.toFixed(1);
-  $('#aVal').textContent=s.a.toFixed(1);
+  $('#aVal').textContent=aFmt(s.a);
   $('#viDown').disabled=s.vi<=VI_MIN+1e-9; $('#viUp').disabled=s.vi>=VI_MAX-1e-9;
-  $('#aDown').disabled=s.a<=A_MIN+1e-9; $('#aUp').disabled=s.a>=A_MAX-1e-9;
+  $('#aDown').disabled=s.a<=-A_MAX+1e-9; $('#aUp').disabled=s.a>=A_MAX-1e-9;
 }
 function step(which,dir){
   const s=cur();
-  if(which==='vi') s.vi=clamp(r1(s.vi+dir*VI_STEP),VI_MIN,VI_MAX);
-  else s.a=clamp(r1(s.a+dir*A_STEP),A_MIN,A_MAX);
-  renderControls();
+  if(which==='vi'){ s.vi=clamp(r1(s.vi+dir*VI_STEP),VI_MIN,VI_MAX); }
+  else { let a=r1(s.a+dir*A_STEP); if(a>-A_MAG && a<A_MAG) a=dir>0?A_MAG:-A_MAG; s.a=clamp(a,-A_MAX,A_MAX); }
+  renderControls(); renderStudentSketch();
 }
 $('#viDown').onclick=()=>step('vi',-1); $('#viUp').onclick=()=>step('vi',1);
 $('#aDown').onclick=()=>step('a',-1);  $('#aUp').onclick=()=>step('a',1);
-
 function renderLog(){
   const s=cur(), tb=$('#logBody'); tb.innerHTML='';
   $('#emptyLog').style.display=s.log.length?'none':'block';
   s.log.slice(-6).reverse().forEach(e=>{ const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${e.vi.toFixed(1)}</td><td>${e.a.toFixed(1)}</td><td>${e.res.toFixed(2)}</td><td>${e.err.toFixed(2)}</td>`;
+    tr.innerHTML=`<td>${e.vi.toFixed(1)}</td><td>${aFmt(e.a)}</td><td>${isFinite(e.res)?e.res.toFixed(2):'stall'}</td><td>${isFinite(e.err)?e.err.toFixed(2):'—'}</td>`;
     tb.appendChild(tr); });
 }
+
+/* ---------- sketches (schematic x-t, v-t, a-t) ---------- */
+function miniSketch(kind,vi,a,dur,color,target){
+  const W=88,H=56,pad=9; dur=Math.max(dur,0.2);
+  const N=24, xs=[], ys=[];
+  for(let i=0;i<=N;i++){ const tau=dur*i/N; xs.push(tau);
+    ys.push(kind==='x'?posAt(vi,a,tau):kind==='v'?velAt(vi,a,tau):a); }
+  let ymin=Math.min(0,...ys), ymax=Math.max(0,...ys);
+  if(target!=null){ ymin=Math.min(ymin,target); ymax=Math.max(ymax,target); }
+  if(ymax-ymin<1e-6){ ymax=ymin+1; }
+  const mx=t=>pad+(t/dur)*(W-2*pad), my=y=>H-pad-((y-ymin)/(ymax-ymin))*(H-2*pad);
+  const path=xs.map((t,i)=>`${i?'L':'M'}${mx(t).toFixed(1)},${my(ys[i]).toFixed(1)}`).join(' ');
+  const zy=my(0);
+  const tline = target==null?'' : `<line x1="${pad}" y1="${my(target).toFixed(1)}" x2="${W-pad}" y2="${my(target).toFixed(1)}" stroke="#ffd166" stroke-dasharray="2 2" stroke-width="1" opacity=".75"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="sk" aria-hidden="true">
+    <rect x=".5" y=".5" width="${W-1}" height="${H-1}" rx="6" fill="#0c1428" stroke="#2c3d6b"/>
+    <line x1="${pad}" y1="${zy.toFixed(1)}" x2="${W-pad}" y2="${zy.toFixed(1)}" stroke="#3a4d7d"/>
+    <line x1="${pad}" y1="${pad-3}" x2="${pad}" y2="${H-pad+3}" stroke="#3a4d7d"/>
+    ${tline}
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2"/>
+    <circle cx="${mx(0).toFixed(1)}" cy="${my(ys[0]).toFixed(1)}" r="2.4" fill="#0c1428" stroke="${color}" stroke-width="1.6"/>
+    <circle cx="${mx(dur).toFixed(1)}" cy="${my(ys[N]).toFixed(1)}" r="2.7" fill="${color}"/>
+    <text x="${pad+2}" y="11" fill="#8296c8" font-size="8">${kind}</text>
+    <text x="${W-pad}" y="${H-3}" fill="#8296c8" font-size="8" text-anchor="end">t</text>
+  </svg>`;
+}
+function renderSketches(comps){
+  const c=cfg(), g=cur().g;
+  $('#sketches').innerHTML = comps.map(k=>{
+    const dur = c.anim==='gate' ? motionEnd(k,c,g).tEnd : g.t;
+    const tX = c.key==='land'?g.target : (c.anim==='gate'?g.d:null);
+    const tV = (c.key==='burn'||c.key==='gate')?g.target:null;
+    return `<div class="skrow"><div class="sknm" style="color:${k.color}">${k.name||'You'}</div>
+      <div class="sktrio">${miniSketch('x',k.vi,k.a,dur,k.color,tX)}${miniSketch('v',k.vi,k.a,dur,k.color,tV)}${miniSketch('a',k.vi,k.a,dur,k.color,null)}</div></div>`;
+  }).join('') + `<div class="skhint">x·t &nbsp; v·t &nbsp; a·t — start (ring) → end (dot); dashed line = target</div>`;
+}
+function renderStudentSketch(){ renderSketches([{name:'You',color:'#ffd166',vi:cur().vi,a:cur().a}]); }
 
 /* ---------- canvas stage ---------- */
 const stage=$('#stage'), sx=stage.getContext('2d');
@@ -336,7 +422,6 @@ function fitStage(){ const dpr=window.devicePixelRatio||1, w=stage.clientWidth,h
   if(stage.width!==bw||stage.height!==bh){ stage.width=bw; stage.height=bh; }
   sx.setTransform(dpr,0,0,dpr,0,0); return {w,h}; }
 function makeStars(w,h){ stars=[]; for(let i=0;i<70;i++) stars.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.4+0.2,a:Math.random()*0.6+0.2}); }
-
 function drawRocket(x,y,s,color,flameOn,flick){
   sx.save(); sx.translate(x,y);
   if(flameOn){ const f=0.55+0.45*flick;
@@ -352,70 +437,51 @@ function drawRocket(x,y,s,color,flameOn,flick){
   sx.beginPath(); sx.arc(5*s,0,3.6*s,0,7); sx.fillStyle='#cfe8ff'; sx.fill();
   sx.restore();
 }
-
-let raceCtx=null;   // {comps,cfg,g,Dmax,dur,mode}
+let raceCtx=null, raf=null, busy=false;
 function computeLayout(comps,c,g){
-  let Dmax=0, dur=0;
-  if(c.anim==='gate'){ Dmax=g.d; comps.forEach(k=>dur=Math.max(dur,timeToDist(k.vi,k.a,g.d))); }
-  else { dur=g.t; comps.forEach(k=>Dmax=Math.max(Dmax,posAt(k.vi,k.a,g.t))); if(c.anim==='time'&&c.key==='land') Dmax=Math.max(Dmax,g.target); }
-  Dmax=Math.max(Dmax,1)*1.08;
-  return {Dmax,dur};
+  let Dmax=(c.key==='land'?g.target:0), dur=0;
+  comps.forEach(k=>{ const me=k._me||(k._me=motionEnd(k,c,g)); dur=Math.max(dur,me.tEnd);
+    for(let i=0;i<=16;i++){ let p=posAt(k.vi,k.a,me.tEnd*i/16); if(c.anim==='gate')p=Math.min(p,g.d); Dmax=Math.max(Dmax,p); } });
+  if(c.anim!=='gate') dur=g.t; else Dmax=Math.max(Dmax,g.d);
+  return {Dmax:Math.max(Dmax,1)*1.08, dur:Math.max(dur,0.3)};
 }
 function drawScene(tau){
   const {w,h}=fitStage(); if(!stars||stars._w!==w){ makeStars(w,h); stars._w=w; }
-  sx.clearRect(0,0,w,h);
-  // bg
   sx.fillStyle='#0a1024'; sx.fillRect(0,0,w,h);
   stars.forEach(st=>{ sx.globalAlpha=st.a; sx.fillStyle='#dfe9ff'; sx.beginPath(); sx.arc(st.x,st.y,st.r,0,7); sx.fill(); });
   sx.globalAlpha=1;
-  if(!raceCtx){ // idle hint
-    sx.fillStyle='#6f83b5'; sx.font='14px -apple-system,sans-serif'; sx.textAlign='center';
-    sx.fillText('Set vᵢ and a, then launch 🚀', w/2, h/2); return;
-  }
+  if(!raceCtx){ sx.fillStyle='#6f83b5'; sx.font='14px -apple-system,sans-serif'; sx.textAlign='center';
+    sx.fillText('Set vᵢ and a, then launch 🚀', w/2, h/2); return; }
   const {comps,cfg:c,g,Dmax}=raceCtx;
-  const xL=64, xR=w-24, y0=44, y1=h-22, lanes=comps.length;
-  const xPx=d=>xL+(d/Dmax)*(xR-xL);
-  const laneY=i=>y0+(i+0.5)*(y1-y0)/lanes;
-  // target / gate marker
+  const xL=64,xR=w-24,y0=44,y1=h-22,lanes=comps.length;
+  const xPx=d=>xL+(d/Dmax)*(xR-xL), laneY=i=>y0+(i+0.5)*(y1-y0)/lanes;
   if(c.anim==='gate'||c.key==='land'){ const dx=xPx(c.anim==='gate'?g.d:g.target);
     sx.strokeStyle=c.anim==='gate'?'#8ff0b6':'#ffd166'; sx.setLineDash([6,5]); sx.lineWidth=2;
     sx.beginPath(); sx.moveTo(dx,y0-6); sx.lineTo(dx,y1+4); sx.stroke(); sx.setLineDash([]);
     sx.fillStyle=c.anim==='gate'?'#8ff0b6':'#ffd166'; sx.font='bold 11px -apple-system,sans-serif'; sx.textAlign='center';
     sx.fillText(c.anim==='gate'?('GATE '+g.d+'m'):('TARGET '+g.target+'m'), dx, y0-10); }
-  // top target-speed banner for burn/gate
   if(c.key==='burn'||c.key==='gate'){ sx.fillStyle='#ffd166'; sx.font='bold 12px -apple-system,sans-serif'; sx.textAlign='left';
     sx.fillText('Target speed: '+g.target.toFixed(1)+' m/s', 12, 20); }
   comps.forEach((k,i)=>{
-    const y=laneY(i);
+    const y=laneY(i), me=k._me||(k._me=motionEnd(k,c,g));
     sx.strokeStyle='rgba(255,255,255,.06)'; sx.lineWidth=1; sx.beginPath(); sx.moveTo(xL,y); sx.lineTo(xR,y); sx.stroke();
-    // motion (freeze at gate for 'gate')
-    let tt=tau, done=false;
-    if(c.anim==='gate'){ const tr=timeToDist(k.vi,k.a,g.d); if(tau>=tr){ tt=tr; done=true; } }
-    else if(tau>=g.t){ tt=g.t; done=true; }
-    const d=c.anim==='gate'? Math.min(posAt(k.vi,k.a,tt),g.d) : posAt(k.vi,k.a,tt);
-    const v=velAt(k.vi,k.a,tt);
-    const s=Math.min(1.15,(y1-y0)/lanes/34);
+    const tt=Math.min(tau,me.tEnd), done=tau>=me.tEnd;
+    let d=posAt(k.vi,k.a,tt); if(c.anim==='gate') d=Math.min(d,g.d); d=Math.max(d,0);
+    const v=velAt(k.vi,k.a,tt), s=Math.min(1.15,(y1-y0)/lanes/34);
     drawRocket(xPx(d),y,s,k.color,!done,Math.random());
-    // name + speed
     sx.textAlign='left'; sx.font='bold 12px -apple-system,sans-serif'; sx.fillStyle=k.color;
-    sx.fillText(k.name, 8, y-9*s-2);
+    sx.fillText(k.name+(done&&!me.reached?'  ⚠ stalled':''), 8, y-9*s-2);
     sx.font='11px -apple-system,sans-serif'; sx.fillStyle='#c8d4f0';
     sx.fillText(v.toFixed(1)+' m/s'+(c.key!=='burn'?('  ·  '+d.toFixed(0)+' m'):''), 8, y+13*s+9);
   });
 }
-
-let raf=null, busy=false;
-function animate(comps,c,g,mode,onEnd){
-  busy=true; setButtons(true);
-  raceCtx={comps,cfg:c,g,mode,...computeLayout(comps,c,g)};
-  const REAL=Math.min(3.4, Math.max(2.2, raceCtx.dur*0.7))*1000;
-  const t0=performance.now();
-  function frame(now){ const el=now-t0, k=Math.min(1,el/REAL); const tau=k*raceCtx.dur;
-    drawScene(tau);
-    if(k<1){ raf=requestAnimationFrame(frame); }
-    else { drawScene(raceCtx.dur); busy=false; setButtons(false); onEnd&&onEnd(); }
-  }
-  raf=requestAnimationFrame(frame);
+function animate(comps,c,g,onEnd){
+  busy=true; setButtons(true); comps.forEach(k=>k._me=motionEnd(k,c,g));
+  raceCtx={comps,cfg:c,g,...computeLayout(comps,c,g)};
+  const REAL=Math.min(3.4,Math.max(2.2,raceCtx.dur*0.7))*1000, t0=performance.now();
+  (function frame(now){ const kf=Math.min(1,(now-t0)/REAL); drawScene(kf*raceCtx.dur);
+    if(kf<1) raf=requestAnimationFrame(frame);
+    else { drawScene(raceCtx.dur); busy=false; setButtons(false); onEnd&&onEnd(); } })(performance.now());
 }
 function setButtons(on){ $('#testBtn').disabled=on; $('#raceBtn').disabled=on;
   document.querySelectorAll('.stepbtn,.tab').forEach(b=>b.style.pointerEvents=on?'none':''); }
@@ -425,75 +491,67 @@ function drawStatic(){ raceCtx=null; if(raf) cancelAnimationFrame(raf); drawScen
 $('#testBtn').onclick=()=>{
   if(busy) return; const c=cfg(), g=cur().g, s=cur();
   const you={name:'You',color:'#ffd166',vi:s.vi,a:s.a};
-  animate([you],c,g,'test',()=>{
-    const res=c.result(s.vi,s.a,g), err=Math.abs(res-c.target(g));
-    s.log.push({vi:s.vi,a:s.a,res,err}); renderLog();
-    showResults([{...you,res,err}],c,g,'test');
-  });
-};
-/* ---------- race ---------- */
-$('#raceBtn').onclick=()=>{
-  if(busy) return; const c=cfg(), g=cur().g, s=cur();
-  const you={name:'You',color:'#ffd166',vi:s.vi,a:s.a,res:c.result(s.vi,s.a,g)};
-  you.err=Math.abs(you.res-c.target(g));
-  const bots=makeBots(c,g,cur().combos);
-  const comps=[you,...bots];
-  animate(comps,c,g,'race',()=>{
-    const won = you.err<=bots[0].err+1e-9 && you.err<=bots[1].err+1e-9;
-    if(won) s.won=true;
-    renderTabs();
-    showResults(comps,c,g,'race',won);
-  });
-};
-
-/* ---------- results overlay ---------- */
-function hideResults(){ $('#results').classList.remove('show'); }
-function fmt(v){ return v.toFixed(2); }
-function showResults(comps,c,g,mode,won){
-  const box=$('#results'); const tgt=c.target(g);
-  if(mode==='test'){
-    const k=comps[0];
+  animate([you],c,g,()=>{
+    const res=c.result(s.vi,s.a,g), err=isFinite(res)?Math.abs(res-c.target(g)):Infinity;
+    s.log.push({vi:s.vi,a:s.a,res,err}); renderLog(); renderStudentSketch();
+    const box=$('#results');
     box.innerHTML=`<div class="banner">🧪 Test flight</div>
-      <div class="rank"><span class="sw" style="background:${k.color}"></span><span class="who">You</span>
-        <span class="res">${c.resName}: <b style="color:#eaf0ff">${fmt(k.res)} ${c.resUnit}</b> · off by ${fmt(k.err)}</span></div>
-      <div class="worked">Target ${c.resName} = <b>${tgt.toFixed(1)} ${c.resUnit}</b>. ${workedLine(c,g,k.vi,k.a)}</div>
-      <div class="rowbtns"><button class="btn" id="rTest">Fly again</button>
-        <button class="btn" id="rRace">🚀 Race the bots!</button>
+      <div class="rank"><span class="sw" style="background:#ffd166"></span><span class="who">You</span>
+        <span class="res">${isFinite(res)?c.resName+': <b style="color:#eaf0ff">'+fmt(res)+' '+c.resUnit+'</b> · off by '+fmt(err):'⚠ did not reach the gate'}</span></div>
+      <div class="worked">Target ${c.resName} = <b>${c.target(g).toFixed(1)} ${c.resUnit}</b>. ${c.worked(g,s.vi,s.a)}</div>
+      <div class="rowbtns"><button class="btn secondary" id="rTest">Fly again</button>
+        <button class="btn" id="rRace" style="flex:1">🚀 Race the bots!</button>
         <button class="btn secondary" id="rClose">Adjust</button></div>`;
     box.classList.add('show');
     $('#rTest').onclick=()=>{ hideResults(); $('#testBtn').click(); };
     $('#rRace').onclick=()=>{ hideResults(); $('#raceBtn').click(); };
     $('#rClose').onclick=hideResults;
-    return;
-  }
-  const ranked=[...comps].sort((a,b)=>a.err-b.err);
-  const medals=['🥇','🥈','🥉'];
-  const banner = won
-    ? `<span style="color:var(--good)">🎉 You cleared ${c.name}!</span>`
-    : `<span style="color:var(--bot2)">So close — a bot edged you out.</span>`;
-  box.innerHTML=`<div class="banner">${banner}</div>`+
-    ranked.map((k,i)=>`<div class="rank ${k.name==='You'?'win':''}" style="${k.name==='You'?'':''}">
-        <span>${medals[i]||''}</span><span class="sw" style="background:${k.color}"></span>
-        <span class="who">${k.name}</span>
-        <span class="res">${fmt(k.res)} ${c.resUnit} · off by <b style="color:#eaf0ff">${fmt(k.err)}</b>${k.isBot?` · ${Math.round(k.opt*100)}% skill`:''}</span>
-      </div>`).join('')+
-    `<div class="worked">Target = <b>${tgt.toFixed(1)} ${c.resUnit}</b>. Your run: ${workedLine(c,g,comps[0].vi,comps[0].a)}</div>
-     <div class="rowbtns"><button class="btn" id="rRematch">🔁 Rematch (new bots)</button>
-       <button class="btn secondary" id="rNew">🎲 New numbers</button>
-       <button class="btn secondary" id="rNext">Next challenge →</button></div>`;
+  });
+};
+
+/* ---------- race (best-of-3 round) ---------- */
+$('#raceBtn').onclick=()=>{
+  if(busy) return; const c=cfg(), g=cur().g, s=cur();
+  if(matchOver(s)){ startMatch(); return; }
+  const you={name:'You',color:'#ffd166',vi:s.vi,a:s.a};
+  you.res=c.result(s.vi,s.a,g); you.err=isFinite(you.res)?Math.abs(you.res-c.target(g)):Infinity;
+  const bots=makeBots(c,g,s.combos), comps=[you,...bots];
+  animate(comps,c,g,()=>{
+    const roundWon = you.err<=bots[0].err+1e-9 && you.err<=bots[1].err+1e-9;
+    if(roundWon) s.mw++; else s.ml++;
+    if(s.mw>=2) s.won=true;
+    renderTabs(); renderMatchBar(); renderSketches(comps);
+    showRace(comps,c,g,roundWon);
+  });
+};
+
+/* ---------- results overlay (race) ---------- */
+function hideResults(){ $('#results').classList.remove('show'); }
+function showRace(comps,c,g,roundWon){
+  const s=cur(), box=$('#results'), tgt=c.target(g);
+  const ranked=[...comps].sort((a,b)=>a.err-b.err), medals=['🥇','🥈','🥉'];
+  const won=s.mw>=2, lost=s.ml>=2;
+  let banner = won?`<span style="color:var(--good)">🏆 Match won — ${c.name} cleared!</span>`
+    : lost?`<span style="color:var(--bot2)">Match lost — regroup and go again.</span>`
+    : roundWon?`<span style="color:var(--good)">✅ Round to you!</span>`
+    : `<span style="color:var(--bot2)">Bots take the round.</span>`;
+  const rows=ranked.map((k,i)=>`<div class="rank ${k.name==='You'?'win':''}">
+      <span>${medals[i]||''}</span><span class="sw" style="background:${k.color}"></span><span class="who">${k.name}</span>
+      <span class="res">${isFinite(k.err)?fmt(k.res)+' '+c.resUnit+' · off by <b style="color:#eaf0ff">'+fmt(k.err)+'</b>':'⚠ stalled'}${k.isBot?' · '+Math.round(k.opt*100)+'% skill':''}</span></div>`).join('');
+  let btns;
+  if(won){ const nxt = (state.ci<2 && unlocked(state.ci+1)) ? `<button class="btn" id="rNext">Next challenge →</button>`:'';
+    btns=`${nxt}<button class="btn secondary" id="rAgain">🔁 Play again</button>`; }
+  else if(lost){ btns=`<button class="btn" id="rAgain">↻ Restart match</button>`; }
+  else { btns=`<button class="btn" id="rNextRound" style="flex:1">Next round →</button>`; }
+  box.innerHTML=`<div class="banner">${banner}</div>
+    <div class="matchscore">Best of 3 · <b>You ${s.mw}</b> – <b>${s.ml} bots</b>${!won&&!lost?` · win ${2-s.mw} more`:''}</div>
+    ${rows}
+    <div class="worked">Target = <b>${tgt.toFixed(1)} ${c.resUnit}</b>. Your run: ${c.worked(g,comps[0].vi,comps[0].a)}</div>
+    <div class="rowbtns">${btns}</div>`;
   box.classList.add('show');
-  $('#rRematch').onclick=()=>{ hideResults(); $('#raceBtn').click(); };
-  $('#rNew').onclick=()=>{ newNumbers(); };
-  $('#rNext').onclick=()=>{ if(busy)return; state.ci=(state.ci+1)%3; syncAll(); };
-}
-function workedLine(c,g,vi,a){
-  if(c.key==='burn') return `v<sub>f</sub> = ${vi.toFixed(1)} + ${a.toFixed(1)}×${g.t.toFixed(1)} = <b>${velAt(vi,a,g.t).toFixed(2)} m/s</b>.`;
-  if(c.key==='gate') return `v<sub>f</sub> = √(${vi.toFixed(1)}² + 2×${a.toFixed(1)}×${g.d}) = <b>${Math.sqrt(vi*vi+2*a*g.d).toFixed(2)} m/s</b>.`;
-  return `d = ${vi.toFixed(1)}×${g.t.toFixed(1)} + ½×${a.toFixed(1)}×${g.t.toFixed(1)}² = <b>${posAt(vi,a,g.t).toFixed(2)} m</b>.`;
-}
-function newNumbers(){ if(busy)return; const c=cfg(); const inst=cur();
-  inst.g=c.gen(); inst.log=[]; inst.combos=enumerate(c,inst.g); inst.vi=5.0; inst.a=3.0;
-  syncAll();
+  if($('#rNextRound')) $('#rNextRound').onclick=()=>{ hideResults(); newRound(); };
+  if($('#rAgain')) $('#rAgain').onclick=()=>{ hideResults(); startMatch(); };
+  if($('#rNext')) $('#rNext').onclick=()=>{ hideResults(); setChallenge(state.ci+1); };
 }
 
 /* ---------- misc ---------- */
