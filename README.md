@@ -16,8 +16,12 @@ Each equation has **two unknowns and one relationship**, so students *choose* on
 
 ## How it plays
 - **🧪 Test flight** — fly your rocket alone and see your result; every test is saved to a flight log so students can *gather data* and refine.
-- **🚀 Race the bots** — run against two computer rockets. **Closest to the target wins.** Beat *both* to clear the challenge and earn its ★.
-- The bots are each set to a **random 75–90% of optimal** every race — good, but beatable if your math is sharp. A student who computes correctly gets essentially zero error and wins; a guesser loses to the smarter bot.
+- **🚀 Race the bots** — run against two computer rockets. **Closest to the target wins the round.**
+- **Best of 3:** every challenge is a match with **fresh numbers each round** — win **2 rounds** to clear it and earn its ★. (New numbers each round means students must actually *do the physics repeatedly*, not just solve once.)
+- **Linear unlock:** clear a challenge to unlock the next; locked challenges show 🔒.
+- The bots each play at a **random 75–90% of optimal** every race — good, but beatable if your math is sharp.
+- **Reverse thrust:** acceleration can be **forward (+) or reverse (−)**, size ≥ 0.5 m/s² in 0.1 steps (the stepper skips the forbidden |a|<0.5 gap). In Speed Gate, braking too hard **stalls before the gate** and loses the round.
+- **Motion sketches:** each rocket shows schematic **x-t, v-t and a-t** mini-graphs — start (ring) → end (dot) and overall curve shape, with a dashed target line — updating live as you tune and shown for all rockets after a race. They convey *shape and endpoints*, not precise readings.
 
 ## Teaching notes
 - **Numbers are randomized** (🎲 New numbers) so each student/period gets different values — no answer-sharing. Every challenge always has a near-exact solution on the allowed grid.
