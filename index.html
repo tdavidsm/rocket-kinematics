@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rocket Kinematics — Beat the Bots</title>
+<style>
+  :root{
+    --bg:#0f1830; --panel:#16213e; --panel2:#1d2b52; --ink:#eaf0ff;
+    --muted:#9fb0d6; --line:#2c3d6b; --accent:#ffd166;
+    --you:#ffd166; --bot1:#4a7dff; --bot2:#e6294b; --good:#2fbf57;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{background:radial-gradient(1200px 700px at 70% -10%, #1a2a52 0%, var(--bg) 55%);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+  header{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#1a2748,#131f3c)}
+  header h1{font-size:19px;margin:0;letter-spacing:.3px}
+  header .tag{font-size:12px;color:var(--muted)}
+  header .spacer{flex:1}
+  .helpbtn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+    padding:7px 12px;font-size:13px;cursor:pointer}
+  .helpbtn:hover{border-color:var(--accent)}
+
+  /* scoreboard medals in header */
+  .medals{display:flex;gap:6px}
+  .medal{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:13px;border:2px solid var(--line);background:var(--panel2);color:var(--muted)}
+  .medal.won{border-color:var(--good);background:#153b28;color:#8ff0b6}
+
+  .wrap{max-width:1500px;margin:0 auto;padding:14px 16px 30px}
+
+  /* challenge tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .tab{flex:1 1 220px;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:12px;
+    padding:10px 12px;cursor:pointer;transition:.12s}
+  .tab:hover{border-color:#3a4d7d}
+  .tab.sel{border-color:var(--accent);background:#20315c}
+  .tab .n{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .tab .nm{font-weight:700;font-size:15px;margin-top:2px}
+  .tab .eq{font-size:12px;color:var(--muted);margin-top:2px;font-style:italic}
+  .tab .badge{float:right;font-size:12px}
+
+  main{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .stagecol{flex:1 1 520px;min-width:0}
+  .sidecol{flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:12px}
+  @media (max-width:880px){ .stagecol,.sidecol{flex:1 1 100%} }
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 8px}
+
+  .stagewrap{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0a1024}
+  canvas#stage{display:block;width:100%;height:340px}
+  @media (max-width:520px){ canvas#stage{height:260px} }
+
+  /* results overlay */
+  .results{position:absolute;inset:0;background:rgba(8,14,32,.86);display:none;flex-direction:column;
+    padding:14px 16px;overflow:auto}
+  .results.show{display:flex}
+  .banner{font-size:20px;font-weight:800;margin:2px 0 10px}
+  .rank{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;background:var(--panel2);
+    margin-bottom:6px;border:1px solid var(--line)}
+  .rank .sw{width:14px;height:14px;border-radius:50%}
+  .rank .who{font-weight:700;min-width:74px}
+  .rank .res{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)}
+  .rank.win{border-color:var(--accent)}
+  .worked{margin-top:8px;font-size:13px;color:var(--muted);background:#0c1428;border:1px solid var(--line);
+    border-radius:10px;padding:9px 11px;line-height:1.5}
+  .worked b{color:var(--ink)}
+  .rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
+
+  /* mission */
+  .mission .goal{font-size:15px;line-height:1.5}
+  .mission .goal b{color:var(--accent)}
+  .givens{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+  .given{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:7px 11px;min-width:96px}
+  .given .k{font-size:11px;color:var(--muted)}
+  .given .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  .eqcard{background:#0c1428;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:6px;
+    font-size:16px;text-align:center;letter-spacing:.3px}
+  .eqcard .sub{font-size:13px;color:var(--muted);margin-top:4px}
+  .hintline{font-size:12px;color:var(--muted);margin-top:8px}
+
+  /* controls */
+  .ctrl{display:flex;align-items:center;gap:10px;margin:10px 0}
+  .ctrl .lab{flex:1;min-width:0}
+  .ctrl .lab .t{font-weight:700}
+  .ctrl .lab .u{font-size:12px;color:var(--muted)}
+  .stepper{display:flex;align-items:center;gap:8px}
+  .stepbtn{width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);
+    color:var(--ink);font-size:24px;font-weight:700;cursor:pointer;line-height:1;touch-action:manipulation}
+  .stepbtn:active{background:#28407a}
+  .stepbtn:disabled{opacity:.35;cursor:not-allowed}
+  .val{min-width:96px;text-align:center;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;
+    background:#0c1428;border:1px solid var(--line);border-radius:10px;padding:8px 4px}
+  .val small{font-size:12px;color:var(--muted);font-weight:600}
+
+  .btn{border:none;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:800;cursor:pointer;
+    color:#0f1830;background:var(--accent);touch-action:manipulation}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  .btn.secondary:hover{border-color:var(--accent)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap}
+
+  table.log{width:100%;border-collapse:collapse;font-size:13px}
+  table.log th,table.log td{text-align:right;padding:4px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  table.log th{color:var(--muted);font-weight:600}
+  table.log td:first-child,table.log th:first-child{text-align:left}
+  .emptylog{color:var(--muted);font-size:13px;padding:4px 2px}
+
+  .modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;z-index:30;padding:18px}
+  .modal.show{display:flex}
+  .modalbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;max-width:600px;
+    padding:22px 24px;line-height:1.55;max-height:86vh;overflow:auto}
+  .modalbox h2{margin-top:0}
+  .modalbox li{margin:6px 0}
+  .modalbox code{background:#0c1428;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🚀 Rocket Kinematics</h1>
+  <span class="tag">Do the physics · beat the bots</span>
+  <span class="spacer"></span>
+  <div class="medals" id="medals"></div>
+  <button class="helpbtn" id="helpBtn">?&nbsp;How&nbsp;to</button>
+</header>
+
+<div class="wrap">
+  <div class="tabs" id="tabs"></div>
+
+  <main>
+    <div class="stagecol">
+      <div class="stagewrap">
+        <canvas id="stage"></canvas>
+        <div class="results" id="results"></div>
+      </div>
+    </div>
+
+    <div class="sidecol">
+      <div class="card mission">
+        <h2 id="missionTitle">Mission</h2>
+        <div class="goal" id="goal"></div>
+        <div class="givens" id="givens"></div>
+        <div class="eqcard" id="eqcard"></div>
+        <div class="hintline">Two unknowns, one equation — so pick any <b>vᵢ</b>, then compute the <b>a</b> that hits the target (or the other way round). Then race!</div>
+      </div>
+
+      <div class="card">
+        <h2>Your rocket</h2>
+        <div class="ctrl">
+          <div class="lab"><div class="t">Initial velocity, vᵢ</div><div class="u">steps of 0.5 m/s</div></div>
+          <div class="stepper">
+            <button class="stepbtn" id="viDown">−</button>
+            <div class="val"><span id="viVal">5.0</span><br><small>m/s</small></div>
+            <button class="stepbtn" id="viUp">+</button>
+          </div>
+        </div>
+        <div class="ctrl">
+          <div class="lab"><div class="t">Acceleration, a</div><div class="u">steps of 0.1 m/s² · min 0.5</div></div>
+          <div class="stepper">
+            <button class="stepbtn" id="aDown">−</button>
+            <div class="val"><span id="aVal">3.0</span><br><small>m/s²</small></div>
+            <button class="stepbtn" id="aUp">+</button>
+          </div>
+        </div>
+        <div class="btnrow" style="margin-top:6px">
+          <button class="btn secondary" id="testBtn">🧪 Test flight</button>
+          <button class="btn" id="raceBtn" style="flex:1">🚀 Race the bots!</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Flight log — test flights</h2>
+        <table class="log"><thead><tr><th>vᵢ</th><th>a</th><th id="logResHead">result</th><th>off by</th></tr></thead>
+          <tbody id="logBody"></tbody></table>
+        <div class="emptylog" id="emptyLog">Run a test flight to gather data.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="helpModal"><div class="modalbox">
+  <h2>How to play</h2>
+  <p>Three challenges, one for each kinematics equation with acceleration. In every one you set your rocket's <b>initial velocity vᵢ</b> and <b>acceleration a</b>, then launch.</p>
+  <ol>
+    <li><b>Timed Burn</b> — <code>v_f = v_i + a·t</code>. You're given the burn <b>time</b> and a <b>target final speed</b>.</li>
+    <li><b>Speed Gate</b> — <code>v_f² = v_i² + 2·a·d</code>. You're given a <b>distance</b> and the <b>target speed</b> to be going when you reach it.</li>
+    <li><b>Target Landing</b> — <code>d = v_i·t + ½·a·t²</code>. You're given a <b>time</b> and a <b>target distance</b> to land on.</li>
+  </ol>
+  <p>Because there are two unknowns and one equation, you get to <b>choose</b> one value and <b>calculate</b> the other. <b>🧪 Test flight</b> flies your rocket alone so you can gather data; <b>🚀 Race the bots</b> runs you against two computer rockets. Get <b>closer to the target than both bots</b> to clear the challenge and earn the medal. The bots are good (75–90% of perfect) but beatable — if your math is sharp.</p>
+  <p style="color:var(--muted)">Rules: acceleration is always forward and at least 0.5 m/s² (steps of 0.1); initial velocity moves in steps of 0.5 m/s.</p>
+  <button class="btn" id="closeHelp">Let's go</button>
+</div></div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const r1=x=>Math.round(x*10)/10, r2=x=>Math.round(x*100)/100;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function gridRand(lo,hi,step){ const n=Math.round((hi-lo)/step); return r2(lo+step*Math.floor(Math.random()*(n+1))); }
+function shade(hex,amt){ const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
+  r=clamp(r,0,255);g=clamp(g,0,255);b=clamp(b,0,255); return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
+
+/* ---------- limits ---------- */
+const VI_MIN=0, VI_MAX=25, VI_STEP=0.5;
+const A_MIN=0.5, A_MAX=12, A_STEP=0.1;
+
+/* ---------- physics ---------- */
+const posAt=(vi,a,t)=>vi*t+0.5*a*t*t;
+const velAt=(vi,a,t)=>vi+a*t;
+const timeToDist=(vi,a,d)=> a<=0 ? (d/Math.max(vi,1e-6)) : (-vi+Math.sqrt(Math.max(0,vi*vi+2*a*d)))/a;
+
+/* ---------- challenges ---------- */
+const CHALLENGES=[
+ { key:'burn', name:'Timed Burn', eq:'v<sub>f</sub> = v<sub>i</sub> + a·t', resName:'final speed', resUnit:'m/s',
+   gen(){ const t=pick([3.0,3.5,4.0,4.5,5.0]); const vi0=gridRand(1,9,0.5), a0=gridRand(1.0,6.0,0.1);
+     return {t, target:r1(vi0+a0*t)}; },
+   result:(vi,a,g)=>velAt(vi,a,g.t),
+   target:g=>g.target, emax:g=>Math.max(1.5,0.4*g.target),
+   givens:g=>[['Burn time t', g.t.toFixed(1)+' s'],['Target v_f', g.target.toFixed(1)+' m/s']],
+   goal:g=>`Burn for <b>${g.t.toFixed(1)} s</b> and finish moving at exactly <b>${g.target.toFixed(1)} m/s</b>.`,
+   eqfill:g=>`v<sub>f</sub> = v<sub>i</sub> + a × ${g.t.toFixed(1)}`,
+   anim:'time' },
+ { key:'gate', name:'Speed Gate', eq:'v<sub>f</sub>² = v<sub>i</sub>² + 2·a·d', resName:'speed at the gate', resUnit:'m/s',
+   gen(){ const d=pick([40,50,60,70,80]); const vi0=gridRand(2,10,0.5), a0=gridRand(1.0,6.0,0.1);
+     return {d, target:r1(Math.sqrt(vi0*vi0+2*a0*d))}; },
+   result:(vi,a,g)=>Math.sqrt(vi*vi+2*a*g.d),
+   target:g=>g.target, emax:g=>Math.max(1.5,0.4*g.target),
+   givens:g=>[['Gate distance d', g.d+' m'],['Target v_f', g.target.toFixed(1)+' m/s']],
+   goal:g=>`Reach the gate at <b>${g.d} m</b> while travelling <b>${g.target.toFixed(1)} m/s</b>.`,
+   eqfill:g=>`v<sub>f</sub>² = v<sub>i</sub>² + 2 × a × ${g.d}`,
+   anim:'gate' },
+ { key:'land', name:'Target Landing', eq:'d = v<sub>i</sub>·t + ½·a·t²', resName:'distance travelled', resUnit:'m',
+   gen(){ const t=pick([3.0,3.5,4.0,4.5,5.0,5.5,6.0]); const vi0=gridRand(1,8,0.5), a0=gridRand(1.0,5.0,0.1);
+     return {t, target:Math.round(posAt(vi0,a0,t))}; },
+   result:(vi,a,g)=>posAt(vi,a,g.t),
+   target:g=>g.target, emax:g=>Math.max(3,0.4*g.target),
+   givens:g=>[['Flight time t', g.t.toFixed(1)+' s'],['Target distance d', g.target+' m']],
+   goal:g=>`Fly for <b>${g.t.toFixed(1)} s</b> and land exactly <b>${g.target} m</b> downrange.`,
+   eqfill:g=>`d = v<sub>i</sub> × ${g.t.toFixed(1)} + ½ × a × ${g.t.toFixed(1)}²`,
+   anim:'time' }
+];
+
+/* ---------- enumerate valid combos for a challenge instance ---------- */
+function enumerate(cfg,g){
+  const out=[], tgt=cfg.target(g);
+  for(let vi=VI_MIN; vi<=VI_MAX+1e-9; vi+=VI_STEP)
+    for(let a=A_MIN; a<=A_MAX+1e-9; a+=A_STEP){
+      const A=r1(a), res=cfg.result(vi,A,g);
+      out.push({vi:r1(vi), a:A, res, err:Math.abs(res-tgt)});
+    }
+  return out;
+}
+/* pick two bots at 75–90% optimal (error ≈ (1-p)*Emax) */
+function makeBots(cfg,g,combos){
+  const Emax=cfg.emax(g), names=[['Astro-9','var(--bot1)','#4a7dff'],['Nova-X','var(--bot2)','#e6294b']];
+  const used=new Set(), bots=[];
+  for(let k=0;k<2;k++){
+    const p=0.75+Math.random()*0.15, want=(1-p)*Emax;
+    let best=null,bd=Infinity;
+    for(const c of combos){ const key=c.vi+'|'+c.a; if(used.has(key)) continue;
+      const d=Math.abs(c.err-want)+0.03*c.a;   // tiny bias to calmer accelerations
+      if(d<bd){bd=d;best=c;} }
+    if(!best) best=combos[0];
+    used.add(best.vi+'|'+best.a);
+    bots.push({name:names[k][0], colorVar:names[k][1], color:names[k][2], vi:best.vi, a:best.a,
+               res:best.res, err:best.err, opt:p, isBot:true});
+  }
+  return bots;
+}
+
+/* ---------- state ---------- */
+const state={ ci:0, ch:CHALLENGES.map(cfg=>{ const g=cfg.gen(); return {g, vi:5.0, a:3.0, log:[], won:false, combos:enumerate(cfg,g)}; }) };
+function cur(){ return state.ch[state.ci]; }
+function cfg(){ return CHALLENGES[state.ci]; }
+
+/* ---------- tabs + medals ---------- */
+function renderTabs(){
+  $('#tabs').innerHTML='';
+  CHALLENGES.forEach((c,i)=>{
+    const el=document.createElement('div'); el.className='tab'+(i===state.ci?' sel':'');
+    el.innerHTML=`<span class="badge">${state.ch[i].won?'✅':''}</span><div class="n">Challenge ${i+1}</div>
+      <div class="nm">${c.name}</div><div class="eq">${c.eq}</div>`;
+    el.onclick=()=>{ if(busy) return; state.ci=i; syncAll(); };
+    $('#tabs').appendChild(el);
+  });
+  const m=$('#medals'); m.innerHTML='';
+  state.ch.forEach((c,i)=>{ const d=document.createElement('div'); d.className='medal'+(c.won?' won':'');
+    d.textContent=c.won?'★':(i+1); d.title='Challenge '+(i+1)+(c.won?' — cleared':''); m.appendChild(d); });
+}
+
+/* ---------- mission + controls ---------- */
+function syncAll(){ renderTabs(); renderMission(); renderControls(); renderLog(); hideResults(); drawStatic(); }
+function renderMission(){
+  const c=cfg(), g=cur().g;
+  $('#missionTitle').textContent='Mission — '+c.name;
+  $('#goal').innerHTML=c.goal(g);
+  $('#givens').innerHTML=c.givens(g).map(([k,v])=>`<div class="given"><div class="k">${k.replace('v_f','v_f').replace('_f','<sub>f</sub>')}</div><div class="v">${v.replace('v_f','v_f')}</div></div>`).join('');
+  $('#eqcard').innerHTML=`${c.eq}<div class="sub">${c.eqfill(g)}</div>`;
+  $('#logResHead').textContent=c.resName+' ('+c.resUnit+')';
+}
+function renderControls(){
+  const s=cur();
+  $('#viVal').textContent=s.vi.toFixed(1);
+  $('#aVal').textContent=s.a.toFixed(1);
+  $('#viDown').disabled=s.vi<=VI_MIN+1e-9; $('#viUp').disabled=s.vi>=VI_MAX-1e-9;
+  $('#aDown').disabled=s.a<=A_MIN+1e-9; $('#aUp').disabled=s.a>=A_MAX-1e-9;
+}
+function step(which,dir){
+  const s=cur();
+  if(which==='vi') s.vi=clamp(r1(s.vi+dir*VI_STEP),VI_MIN,VI_MAX);
+  else s.a=clamp(r1(s.a+dir*A_STEP),A_MIN,A_MAX);
+  renderControls();
+}
+$('#viDown').onclick=()=>step('vi',-1); $('#viUp').onclick=()=>step('vi',1);
+$('#aDown').onclick=()=>step('a',-1);  $('#aUp').onclick=()=>step('a',1);
+
+function renderLog(){
+  const s=cur(), tb=$('#logBody'); tb.innerHTML='';
+  $('#emptyLog').style.display=s.log.length?'none':'block';
+  s.log.slice(-6).reverse().forEach(e=>{ const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${e.vi.toFixed(1)}</td><td>${e.a.toFixed(1)}</td><td>${e.res.toFixed(2)}</td><td>${e.err.toFixed(2)}</td>`;
+    tb.appendChild(tr); });
+}
+
+/* ---------- canvas stage ---------- */
+const stage=$('#stage'), sx=stage.getContext('2d');
+let stars=null;
+function fitStage(){ const dpr=window.devicePixelRatio||1, w=stage.clientWidth,h=stage.clientHeight;
+  const bw=Math.round(w*dpr), bh=Math.round(h*dpr);
+  if(stage.width!==bw||stage.height!==bh){ stage.width=bw; stage.height=bh; }
+  sx.setTransform(dpr,0,0,dpr,0,0); return {w,h}; }
+function makeStars(w,h){ stars=[]; for(let i=0;i<70;i++) stars.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.4+0.2,a:Math.random()*0.6+0.2}); }
+
+function drawRocket(x,y,s,color,flameOn,flick){
+  sx.save(); sx.translate(x,y);
+  if(flameOn){ const f=0.55+0.45*flick;
+    sx.beginPath(); sx.moveTo(-13*s,-4*s); sx.lineTo(-13*s-24*s*f,0); sx.lineTo(-13*s,4*s); sx.closePath();
+    const grd=sx.createLinearGradient(-13*s,0,-40*s,0); grd.addColorStop(0,'#ffe08a'); grd.addColorStop(.5,'#ff8f2e'); grd.addColorStop(1,'rgba(230,60,20,0)');
+    sx.fillStyle=grd; sx.fill(); }
+  sx.fillStyle=shade(color,-40);
+  sx.beginPath(); sx.moveTo(-13*s,-6*s); sx.lineTo(-21*s,-13*s); sx.lineTo(-9*s,-6*s); sx.closePath(); sx.fill();
+  sx.beginPath(); sx.moveTo(-13*s,6*s); sx.lineTo(-21*s,13*s); sx.lineTo(-9*s,6*s); sx.closePath(); sx.fill();
+  sx.fillStyle=color; sx.strokeStyle='rgba(0,0,0,.45)'; sx.lineWidth=1.4*s;
+  sx.beginPath(); sx.moveTo(-13*s,-6*s); sx.lineTo(7*s,-6*s); sx.quadraticCurveTo(22*s,-6*s,26*s,0);
+  sx.quadraticCurveTo(22*s,6*s,7*s,6*s); sx.lineTo(-13*s,6*s); sx.closePath(); sx.fill(); sx.stroke();
+  sx.beginPath(); sx.arc(5*s,0,3.6*s,0,7); sx.fillStyle='#cfe8ff'; sx.fill();
+  sx.restore();
+}
+
+let raceCtx=null;   // {comps,cfg,g,Dmax,dur,mode}
+function computeLayout(comps,c,g){
+  let Dmax=0, dur=0;
+  if(c.anim==='gate'){ Dmax=g.d; comps.forEach(k=>dur=Math.max(dur,timeToDist(k.vi,k.a,g.d))); }
+  else { dur=g.t; comps.forEach(k=>Dmax=Math.max(Dmax,posAt(k.vi,k.a,g.t))); if(c.anim==='time'&&c.key==='land') Dmax=Math.max(Dmax,g.target); }
+  Dmax=Math.max(Dmax,1)*1.08;
+  return {Dmax,dur};
+}
+function drawScene(tau){
+  const {w,h}=fitStage(); if(!stars||stars._w!==w){ makeStars(w,h); stars._w=w; }
+  sx.clearRect(0,0,w,h);
+  // bg
+  sx.fillStyle='#0a1024'; sx.fillRect(0,0,w,h);
+  stars.forEach(st=>{ sx.globalAlpha=st.a; sx.fillStyle='#dfe9ff'; sx.beginPath(); sx.arc(st.x,st.y,st.r,0,7); sx.fill(); });
+  sx.globalAlpha=1;
+  if(!raceCtx){ // idle hint
+    sx.fillStyle='#6f83b5'; sx.font='14px -apple-system,sans-serif'; sx.textAlign='center';
+    sx.fillText('Set vᵢ and a, then launch 🚀', w/2, h/2); return;
+  }
+  const {comps,cfg:c,g,Dmax}=raceCtx;
+  const xL=64, xR=w-24, y0=44, y1=h-22, lanes=comps.length;
+  const xPx=d=>xL+(d/Dmax)*(xR-xL);
+  const laneY=i=>y0+(i+0.5)*(y1-y0)/lanes;
+  // target / gate marker
+  if(c.anim==='gate'||c.key==='land'){ const dx=xPx(c.anim==='gate'?g.d:g.target);
+    sx.strokeStyle=c.anim==='gate'?'#8ff0b6':'#ffd166'; sx.setLineDash([6,5]); sx.lineWidth=2;
+    sx.beginPath(); sx.moveTo(dx,y0-6); sx.lineTo(dx,y1+4); sx.stroke(); sx.setLineDash([]);
+    sx.fillStyle=c.anim==='gate'?'#8ff0b6':'#ffd166'; sx.font='bold 11px -apple-system,sans-serif'; sx.textAlign='center';
+    sx.fillText(c.anim==='gate'?('GATE '+g.d+'m'):('TARGET '+g.target+'m'), dx, y0-10); }
+  // top target-speed banner for burn/gate
+  if(c.key==='burn'||c.key==='gate'){ sx.fillStyle='#ffd166'; sx.font='bold 12px -apple-system,sans-serif'; sx.textAlign='left';
+    sx.fillText('Target speed: '+g.target.toFixed(1)+' m/s', 12, 20); }
+  comps.forEach((k,i)=>{
+    const y=laneY(i);
+    sx.strokeStyle='rgba(255,255,255,.06)'; sx.lineWidth=1; sx.beginPath(); sx.moveTo(xL,y); sx.lineTo(xR,y); sx.stroke();
+    // motion (freeze at gate for 'gate')
+    let tt=tau, done=false;
+    if(c.anim==='gate'){ const tr=timeToDist(k.vi,k.a,g.d); if(tau>=tr){ tt=tr; done=true; } }
+    else if(tau>=g.t){ tt=g.t; done=true; }
+    const d=c.anim==='gate'? Math.min(posAt(k.vi,k.a,tt),g.d) : posAt(k.vi,k.a,tt);
+    const v=velAt(k.vi,k.a,tt);
+    const s=Math.min(1.15,(y1-y0)/lanes/34);
+    drawRocket(xPx(d),y,s,k.color,!done,Math.random());
+    // name + speed
+    sx.textAlign='left'; sx.font='bold 12px -apple-system,sans-serif'; sx.fillStyle=k.color;
+    sx.fillText(k.name, 8, y-9*s-2);
+    sx.font='11px -apple-system,sans-serif'; sx.fillStyle='#c8d4f0';
+    sx.fillText(v.toFixed(1)+' m/s'+(c.key!=='burn'?('  ·  '+d.toFixed(0)+' m'):''), 8, y+13*s+9);
+  });
+}
+
+let raf=null, busy=false;
+function animate(comps,c,g,mode,onEnd){
+  busy=true; setButtons(true);
+  raceCtx={comps,cfg:c,g,mode,...computeLayout(comps,c,g)};
+  const REAL=Math.min(3.4, Math.max(2.2, raceCtx.dur*0.7))*1000;
+  const t0=performance.now();
+  function frame(now){ const el=now-t0, k=Math.min(1,el/REAL); const tau=k*raceCtx.dur;
+    drawScene(tau);
+    if(k<1){ raf=requestAnimationFrame(frame); }
+    else { drawScene(raceCtx.dur); busy=false; setButtons(false); onEnd&&onEnd(); }
+  }
+  raf=requestAnimationFrame(frame);
+}
+function setButtons(on){ $('#testBtn').disabled=on; $('#raceBtn').disabled=on;
+  document.querySelectorAll('.stepbtn,.tab').forEach(b=>b.style.pointerEvents=on?'none':''); }
+function drawStatic(){ raceCtx=null; if(raf) cancelAnimationFrame(raf); drawScene(0); }
+
+/* ---------- test flight ---------- */
+$('#testBtn').onclick=()=>{
+  if(busy) return; const c=cfg(), g=cur().g, s=cur();
+  const you={name:'You',color:'#ffd166',vi:s.vi,a:s.a};
+  animate([you],c,g,'test',()=>{
+    const res=c.result(s.vi,s.a,g), err=Math.abs(res-c.target(g));
+    s.log.push({vi:s.vi,a:s.a,res,err}); renderLog();
+    showResults([{...you,res,err}],c,g,'test');
+  });
+};
+/* ---------- race ---------- */
+$('#raceBtn').onclick=()=>{
+  if(busy) return; const c=cfg(), g=cur().g, s=cur();
+  const you={name:'You',color:'#ffd166',vi:s.vi,a:s.a,res:c.result(s.vi,s.a,g)};
+  you.err=Math.abs(you.res-c.target(g));
+  const bots=makeBots(c,g,cur().combos);
+  const comps=[you,...bots];
+  animate(comps,c,g,'race',()=>{
+    const won = you.err<=bots[0].err+1e-9 && you.err<=bots[1].err+1e-9;
+    if(won) s.won=true;
+    renderTabs();
+    showResults(comps,c,g,'race',won);
+  });
+};
+
+/* ---------- results overlay ---------- */
+function hideResults(){ $('#results').classList.remove('show'); }
+function fmt(v){ return v.toFixed(2); }
+function showResults(comps,c,g,mode,won){
+  const box=$('#results'); const tgt=c.target(g);
+  if(mode==='test'){
+    const k=comps[0];
+    box.innerHTML=`<div class="banner">🧪 Test flight</div>
+      <div class="rank"><span class="sw" style="background:${k.color}"></span><span class="who">You</span>
+        <span class="res">${c.resName}: <b style="color:#eaf0ff">${fmt(k.res)} ${c.resUnit}</b> · off by ${fmt(k.err)}</span></div>
+      <div class="worked">Target ${c.resName} = <b>${tgt.toFixed(1)} ${c.resUnit}</b>. ${workedLine(c,g,k.vi,k.a)}</div>
+      <div class="rowbtns"><button class="btn" id="rTest">Fly again</button>
+        <button class="btn" id="rRace">🚀 Race the bots!</button>
+        <button class="btn secondary" id="rClose">Adjust</button></div>`;
+    box.classList.add('show');
+    $('#rTest').onclick=()=>{ hideResults(); $('#testBtn').click(); };
+    $('#rRace').onclick=()=>{ hideResults(); $('#raceBtn').click(); };
+    $('#rClose').onclick=hideResults;
+    return;
+  }
+  const ranked=[...comps].sort((a,b)=>a.err-b.err);
+  const medals=['🥇','🥈','🥉'];
+  const banner = won
+    ? `<span style="color:var(--good)">🎉 You cleared ${c.name}!</span>`
+    : `<span style="color:var(--bot2)">So close — a bot edged you out.</span>`;
+  box.innerHTML=`<div class="banner">${banner}</div>`+
+    ranked.map((k,i)=>`<div class="rank ${k.name==='You'?'win':''}" style="${k.name==='You'?'':''}">
+        <span>${medals[i]||''}</span><span class="sw" style="background:${k.color}"></span>
+        <span class="who">${k.name}</span>
+        <span class="res">${fmt(k.res)} ${c.resUnit} · off by <b style="color:#eaf0ff">${fmt(k.err)}</b>${k.isBot?` · ${Math.round(k.opt*100)}% skill`:''}</span>
+      </div>`).join('')+
+    `<div class="worked">Target = <b>${tgt.toFixed(1)} ${c.resUnit}</b>. Your run: ${workedLine(c,g,comps[0].vi,comps[0].a)}</div>
+     <div class="rowbtns"><button class="btn" id="rRematch">🔁 Rematch (new bots)</button>
+       <button class="btn secondary" id="rNew">🎲 New numbers</button>
+       <button class="btn secondary" id="rNext">Next challenge →</button></div>`;
+  box.classList.add('show');
+  $('#rRematch').onclick=()=>{ hideResults(); $('#raceBtn').click(); };
+  $('#rNew').onclick=()=>{ newNumbers(); };
+  $('#rNext').onclick=()=>{ if(busy)return; state.ci=(state.ci+1)%3; syncAll(); };
+}
+function workedLine(c,g,vi,a){
+  if(c.key==='burn') return `v<sub>f</sub> = ${vi.toFixed(1)} + ${a.toFixed(1)}×${g.t.toFixed(1)} = <b>${velAt(vi,a,g.t).toFixed(2)} m/s</b>.`;
+  if(c.key==='gate') return `v<sub>f</sub> = √(${vi.toFixed(1)}² + 2×${a.toFixed(1)}×${g.d}) = <b>${Math.sqrt(vi*vi+2*a*g.d).toFixed(2)} m/s</b>.`;
+  return `d = ${vi.toFixed(1)}×${g.t.toFixed(1)} + ½×${a.toFixed(1)}×${g.t.toFixed(1)}² = <b>${posAt(vi,a,g.t).toFixed(2)} m</b>.`;
+}
+function newNumbers(){ if(busy)return; const c=cfg(); const inst=cur();
+  inst.g=c.gen(); inst.log=[]; inst.combos=enumerate(c,inst.g); inst.vi=5.0; inst.a=3.0;
+  syncAll();
+}
+
+/* ---------- misc ---------- */
+$('#helpBtn').onclick=()=>$('#helpModal').classList.add('show');
+$('#closeHelp').onclick=()=>$('#helpModal').classList.remove('show');
+$('#helpModal').onclick=e=>{ if(e.target.id==='helpModal') $('#helpModal').classList.remove('show'); };
+window.addEventListener('resize',()=>{ if(!busy) drawStatic(); });
+
+syncAll();
+</script>
+</body>
+</html>
