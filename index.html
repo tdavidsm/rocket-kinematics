@@ -126,6 +126,36 @@
   .modalbox h2{margin-top:0}
   .modalbox li{margin:6px 0}
   .modalbox code{background:#0c1428;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+  /* intro / instructions */
+  .introbox{max-width:740px}
+  .introhero{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+  .introhero .rk{font-size:40px;line-height:1}
+  .introhero h2{margin:0;font-size:22px}
+  .introhero .sub{margin:3px 0 0;color:var(--muted);font-size:14px}
+  .modalbox h3{margin:16px 0 8px;font-size:15px}
+  .modalbox h3 .eqinline{font-size:13px;color:var(--muted);font-style:italic;font-weight:400;margin-left:6px}
+  ol.how,ol.legend,ul.tips{margin:0;padding-left:20px}
+  ol.how li,ol.legend li,ul.tips li{margin:5px 0}
+  .mock{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:10px 0 6px}
+  @media(max-width:540px){ .mock{grid-template-columns:1fr} }
+  .mockcard{position:relative;background:#0c1428;border:1px solid var(--line);border-radius:12px;padding:14px 12px 11px}
+  .callout{position:absolute;top:-10px;left:-10px;width:25px;height:25px;border-radius:50%;background:var(--accent);
+    color:#0f1830;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid #0c1428}
+  .mini-eq{text-align:center;font-size:17px;padding:6px 0 2px}
+  .mini-givens{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted)}
+  .mini-givens b{color:var(--ink)}
+  .mini-ctrl{display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;flex-wrap:wrap;padding:8px 0 2px}
+  .mini-step{width:28px;height:28px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);
+    display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+  .mini-val{min-width:56px;text-align:center;background:#0a1122;border:1px solid var(--line);border-radius:8px;
+    padding:5px 6px;font-weight:800;font-variant-numeric:tabular-nums}
+  .mini-rank{display:flex;gap:8px;font-size:13px;padding:5px 9px;border-radius:8px;background:var(--panel2);
+    border:1px solid var(--line);margin-bottom:5px}
+  .mini-rank:last-child{margin-bottom:0}
+  .mini-rank.you{border-color:var(--accent)}
+  .mini-rank .r{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+  .mockcard svg{width:100%;height:auto;display:block;margin-top:2px}
+  .caphdr{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -134,7 +164,7 @@
   <span class="tag">Do the physics · win the match</span>
   <span class="spacer"></span>
   <div class="medals" id="medals"></div>
-  <button class="helpbtn" id="helpBtn">?&nbsp;How&nbsp;to</button>
+  <button class="helpbtn" id="helpBtn">📖&nbsp;How&nbsp;to&nbsp;play</button>
 </header>
 
 <div class="wrap">
@@ -196,21 +226,72 @@
   </main>
 </div>
 
-<div class="modal" id="helpModal"><div class="modalbox">
-  <h2>How to play</h2>
-  <p>Three challenges, one per kinematics equation with acceleration. In each, set your rocket's <b>initial velocity vᵢ</b> and <b>acceleration a</b>, then launch.</p>
-  <ol>
-    <li><b>Timed Burn</b> — <code>v_f = v_i + a·t</code>. Given the burn <b>time</b> and a <b>target final speed</b>.</li>
-    <li><b>Speed Gate</b> — <code>v_f² = v_i² + 2·a·d</code>. Given a <b>distance</b> and the <b>target speed</b> to be going at it. (Decelerate too hard and you'll stall before the gate!)</li>
-    <li><b>Target Landing</b> — <code>d = v_i·t + ½·a·t²</code>. Given a <b>time</b> and a <b>target distance</b> to land on.</li>
+<div class="modal" id="intro"><div class="modalbox introbox">
+  <div class="introhero"><div class="rk">🚀</div><div>
+    <h2>Rocket Kinematics</h2>
+    <p class="sub">Do the physics, fly your rocket, and beat two computer opponents across three kinematics challenges.</p>
+  </div></div>
+
+  <h3>How a challenge works</h3>
+  <ol class="how">
+    <li>Each challenge gives you a <b>target</b> and the matching equation with the known values filled in.</li>
+    <li>Set your rocket's <b>initial velocity vᵢ</b> and <b>acceleration a</b> to hit that target.</li>
+    <li><b>🧪 Test-fly</b> to gather data, then <b>🚀 race two bots</b> — closest to the target wins the round.</li>
+    <li><b>Best of 3:</b> win 2 rounds to clear the challenge and unlock the next (they open in order).</li>
   </ol>
-  <ul>
-    <li><b>Best of 3:</b> every challenge is a match. Each round has <b>fresh numbers</b>; beat <b>both bots</b> to win the round, and win <b>2 rounds</b> to clear the challenge and earn its ★.</li>
-    <li><b>Unlock order:</b> clear a challenge to unlock the next.</li>
-    <li>Bots play at a random <b>75–90% of optimal</b> — good, but beatable with sharp math.</li>
+
+  <h3>The first activity — Timed Burn <span class="eqinline">v_f = vᵢ + a·t</span></h3>
+  <div class="mock">
+    <div class="mockcard"><span class="callout">1</span>
+      <div class="caphdr">Mission</div>
+      <div class="mini-eq">v<sub>f</sub> = v<sub>i</sub> + a × <b>4.0</b></div>
+      <div class="mini-givens"><span>time t = <b>4.0 s</b></span><span>target v<sub>f</sub> = <b>22.0 m/s</b></span></div>
+    </div>
+    <div class="mockcard"><span class="callout">2</span>
+      <div class="caphdr">Your controls</div>
+      <div class="mini-ctrl">v<sub>i</sub><span class="mini-step">−</span><span class="mini-val">6.0</span><span class="mini-step">+</span>
+        <span style="width:10px"></span> a<span class="mini-step">−</span><span class="mini-val">+4.0</span><span class="mini-step">+</span></div>
+    </div>
+    <div class="mockcard"><span class="callout">3</span>
+      <div class="caphdr">Velocity graph (drawn as you fly)</div>
+      <svg viewBox="0 0 300 126" aria-hidden="true">
+        <line x1="36" y1="12" x2="36" y2="108" stroke="#3a4d7d" stroke-width="1.5"/>
+        <line x1="36" y1="108" x2="292" y2="108" stroke="#3a4d7d" stroke-width="1.5"/>
+        <line x1="36" y1="38" x2="292" y2="38" stroke="#8ff0b6" stroke-dasharray="4 3" stroke-width="1.5"/>
+        <text x="290" y="32" fill="#8ff0b6" font-size="10" text-anchor="end">target speed</text>
+        <line x1="36" y1="90" x2="276" y2="38" stroke="#ffd166" stroke-width="3"/>
+        <circle cx="36" cy="90" r="4" fill="#0c1428" stroke="#ffd166" stroke-width="2.5"/>
+        <circle cx="276" cy="38" r="4.6" fill="#ffd166"/>
+        <text x="31" y="94" fill="#c8d4f0" font-size="10" text-anchor="end">vᵢ</text>
+        <text x="150" y="58" fill="#9fb0d6" font-size="10">slope = a</text>
+        <text x="12" y="18" fill="#8296c8" font-size="10">v</text>
+        <text x="250" y="122" fill="#8296c8" font-size="10">time →</text>
+      </svg>
+    </div>
+    <div class="mockcard"><span class="callout">4</span>
+      <div class="caphdr">Race result</div>
+      <div class="mini-rank you">🥇 You<span class="r">22.0 m/s ✓</span></div>
+      <div class="mini-rank">🥈 Astro-9<span class="r">off by 1.5</span></div>
+      <div class="mini-rank">🥉 Nova-X<span class="r">off by 1.9</span></div>
+    </div>
+  </div>
+  <ol class="legend">
+    <li><b>Mission.</b> You get the burn time t and the target final speed. The equation shows exactly what to solve.</li>
+    <li><b>Controls.</b> Step vᵢ (by 0.5) and a (by 0.1; <b>+ forward or − reverse</b>). Two unknowns, one equation — pick one value, compute the other.</li>
+    <li><b>Motion graphs.</b> They trace under the rockets as you fly. On the velocity graph the line starts at vᵢ and climbs with slope a — you nail it when the end dot lands on the dashed target line.</li>
+    <li><b>The race.</b> Beat <b>both</b> bots to take the round; win 2 of 3 rounds to earn the ★.</li>
+  </ol>
+
+  <h3>Strategy</h3>
+  <ul class="tips">
+    <li>Rearrange the equation: <b>a = (v_f − vᵢ) ÷ t</b>. Pick a friendly vᵢ, then compute a. (Here vᵢ = 6 → a = (22 − 6) ÷ 4 = <b>4.0</b>.)</li>
+    <li>Check yourself on the <b>velocity graph</b>: does the yellow line end right on the dashed target line?</li>
+    <li><b>Test-fly first</b> — it's unlimited, and every attempt is saved to your flight log.</li>
+    <li><b>Reverse thrust</b> (−a) is allowed: start faster than the target and brake down to it.</li>
+    <li>The bots play 75–90% of perfect — do the math and you'll beat them.</li>
   </ul>
-  <p style="color:var(--muted)">Rules: acceleration can be <b>forward (+) or reverse (−)</b> but its size is at least 0.5 m/s² (steps of 0.1); initial velocity moves in steps of 0.5 m/s. The little sketches show the <b>shape</b> of your x-t, v-t and a-t graphs — start/end and curve, not exact readings.</p>
-  <button class="btn" id="closeHelp">Let's go</button>
+
+  <button class="btn" id="startPlay" style="width:100%;margin-top:8px">Start playing 🚀</button>
 </div></div>
 
 <script>
@@ -555,12 +636,15 @@ function showRace(comps,c,g,roundWon){
 }
 
 /* ---------- misc ---------- */
-$('#helpBtn').onclick=()=>$('#helpModal').classList.add('show');
-$('#closeHelp').onclick=()=>$('#helpModal').classList.remove('show');
-$('#helpModal').onclick=e=>{ if(e.target.id==='helpModal') $('#helpModal').classList.remove('show'); };
+function showIntro(){ $('#intro').classList.add('show'); }
+function hideIntro(){ $('#intro').classList.remove('show'); }
+$('#helpBtn').onclick=showIntro;
+$('#startPlay').onclick=hideIntro;
+$('#intro').onclick=e=>{ if(e.target.id==='intro') hideIntro(); };
 window.addEventListener('resize',()=>{ if(!busy) drawStatic(); });
 
 syncAll();
+showIntro();   // instructions appear automatically on a fresh load
 </script>
 </body>
 </html>
